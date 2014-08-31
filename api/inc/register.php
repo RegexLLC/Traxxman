@@ -5,10 +5,10 @@
             $emresult = filter_var( $em, FILTER_VALIDATE_EMAIL );
             if($emresult){
 
-        $con=mysqli_connect($host,$user,$pass,$db);
+        $con=mysqli_connect($dbhost,$dbuser,$dbpass,$dbname);
 
 
-        if (!$link = mysql_connect($host, $user, $pass)) {
+        if (!$link = mysql_connect($dbhost, $dbuser, $dbpass)) {
             echo $_GET['callback'] . '(' . "{'status' : 'Could not connect to mysql'}" . ')';
             exit;
         }

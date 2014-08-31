@@ -1,7 +1,7 @@
 <?php
     $siteName = 'Traxxman';
-    $domain = 'localhost';
-    $host = 'localhost';
-    $user = 'root';
-    $pass = '';
-    $db = 'traxxman';
+    $domain = 'https://traxxman.com';
+    $dbhost = 'localhost';
+    $dbuser = 'root';
+    $dbpass = '123456';
+    $dbname = 'traxxman';

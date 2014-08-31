@@ -38,12 +38,12 @@ function generateRandStr($length){
       return $randstr; 
    } 
         
-        if (!$link = mysql_connect($host, $user, $pass)) {
+        if (!$link = mysql_connect($dbhost, $dbuser, $dbpass)) {
             echo $_GET['callback'] . '(' . "{'status' : 'Could not connect to mysql'}" . ')';
             exit;
         }
 
-        if (!mysql_select_db($db, $link)) {
+        if (!mysql_select_db($dbname, $link)) {
             echo $_GET['callback'] . '(' . "{'status' : 'Could not select database'}" . ')';
             exit;
         }

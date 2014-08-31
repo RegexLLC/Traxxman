@@ -1,4 +1,4 @@
-var domain = "http://127.0.0.1/Traxxman/api/";
+var domain = "https://traxxman.com/Traxxman/api/";
 
 
 function check() {
@@ -108,36 +108,9 @@ function formToJSONWOADD() {
     });
 }
 
-function addWorkorders() {
-    var ordernumber = $('#ordernumber').val();
-    $.ajax({
-        type: 'POST',
-        contentType: 'application/json',
-        url: domain + 'workorders',
-        dataType: 'json',
-        data: formToJSONWOADD(),
-        success: function(data, textStatus, jqXHR) {
-            document.getElementById('status').innerHTML = '<b>Work Order #' + ordernumber + ' Created</b>';
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-            document.getElementById('status').innerHTML = '<b>Work Order Error: ' + textStatus + '</b>';
-        }
-    });
-}
-$(document).on("pageinit", "#home", function(event) {
-    $.getJSON(domain + "fullname/" + window.localStorage.getItem("api"), function(data) {
-        document.getElementById('username').innerHTML = data[0].fullname;
-    });
-    $.getJSON(domain + "workordercount/" + window.localStorage.getItem("api"), function(data) {
-        document.getElementById('workordercount').innerHTML = data[0].workordercount + " Work Orders";
-    });
-    $.getJSON(domain + "messagescount/" + window.localStorage.getItem("api"), function(data) {
-        document.getElementById('messagescount').innerHTML = data[0].unreadmessages + " Messages";
-    });
-});
-$(document).on("pageinit", "#workorders", function(event) {
-    $.getJSON(domain + "workorders/" + window.localStorage.getItem("api"), function(data) {
-
+function loadworkorderslist() {
+	    var loadingworkorders = $.getJSON(domain + "workorders/" + window.localStorage.getItem("api"), function(data) {
+				
         var splitme = data.workorderids;
         var workorders = splitme.split(', ');
 
@@ -149,27 +122,74 @@ $(document).on("pageinit", "#workorders", function(event) {
                         $.getJSON(domain + "workordertitle/" + value + "/" + window.localStorage.getItem("api"), function(titledata) {
 
                             $('#workorderslist').append('<li><a href="#workorderpage"><img src="http://maps.googleapis.com/maps/api/staticmap?center=' + addressdata[0].eventdata + '&zoom=12&size=150x150&markers=color:red%7Clabel:A%7C' + addressdata[0].eventdata + '"></img><h2>' + value + '</h2><p>' + titledata[0].eventdata + '</p></a><a href="#mappage">' + addressdata[0].eventdata + '</a></li>');
-
                             $('#workorderslist').listview().listview('refresh');
+							
                         });
                     });
                 });
             });
         });
     });
-});
+};
 
-$(document).on("pageinit", "#inbox", function(event) {
+
+
+
+function addWorkorders() {
+    var ordernumber = $('#ordernumber').val();
+    $.ajax({
+        type: 'POST',
+        contentType: 'application/json',
+        url: domain + 'workorders',
+        dataType: 'json',
+        data: formToJSONWOADD(),
+        success: function(data, textStatus, jqXHR) {
+            document.getElementById('addWorkOrderStatus').innerHTML = '<b>Work Order #' + ordernumber + ' Created</b>';
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            document.getElementById('addWorkOrderStatus').innerHTML = '<b>Work Order Error: ' + textStatus + '</b>';
+        }
+    });
+}
+
+	function loadnavbar() {
+    $.getJSON(domain + "fullname/" + window.localStorage.getItem("api"), function(data) {
+        document.getElementById('username').innerHTML = data[0].fullname;
+    });
+    $.getJSON(domain + "workordercount/" + window.localStorage.getItem("api"), function(data) {
+        document.getElementById('workordercount').innerHTML = data[0].workordercount + " Work Orders";
+    });
+    $.getJSON(domain + "messagescount/" + window.localStorage.getItem("api"), function(data) {
+        document.getElementById('messagescount').innerHTML = data[0].unreadmessages + " Messages";
+    });
+	};
+
+	function loadinbox() {
     $.mobile.loading('show');
     $.getJSON(domain + "inbox/lastten/" + window.localStorage.getItem("api"), function(data) {
         for (var i = 0, l = data.messages.length; i < l; i++) {
             var obj = data.messages[i];
             $('#messageslist').append('<li><a href="#popupReply' + i + '" data-rel="popup"><h3>' + obj.friendlyfrom + '</h3><p><strong>' + obj.subject + '</strong></p><p>' + obj.contents + '</p><p class="ui-li-aside"><strong>' + obj.timestamp + '</strong></p></a></li>');
-            $('#popupReply' + i).append('<h3 style="padding-top: 10px;">' + obj.contents + '</h3><form><div style="padding:10px 10px;"><label for="reply" class="ui-hidden-accessible"></label><input type="text" placeholder="Message subject" name="subject" id="subject" data-theme="a""></input><br><textarea placeholder="Write your message..." name="contents" id="contents" data-theme="a""></textarea><br><button type="submit" data-theme="a" onclick="messagereply(' + obj.from + ')">Reply to ' + obj.friendlyfrom + '</button></div></form>');
+			
+            $('#popupReply' + i).append('<h3 style="padding top: 10px 10px;">' + obj.contents + '</h3><form><div style="padding:10px 10px;"><label for="reply" class="ui-hidden-accessible"></label><input type="text" placeholder="Message subject" name="subject" id="subject" data-theme="a"></input><textarea placeholder="Write your message..." name="contents" id="contents" data-theme="a""></textarea><br><button type="submit" data-theme="a" onclick="messagereply(' + obj.from + ')">Reply to ' + obj.friendlyfrom + '</button></div></form>');
             $('#messageslist').listview().listview('refresh');
+			$('#popupReply' + i).trigger("create");
+			$('#popupReply' + i).listview();
         }
-
+		document.getElementById('loadInboxStatus').innerHTML = "Inbox";
     });
+};
+
+$(document).on("pageinit", "#home", function(event) {
+	loadnavbar();
+});
+
+$(document).on("pageinit", "#workorders", function(event) {
+	loadworkorderslist();
+});
+
+$(document).on("pageinit", "#inbox", function(event) {
+	loadinbox();
 });
 
 function messagereply(id) {
@@ -191,6 +211,7 @@ function messagereply(id) {
         data: MessageReplyData(),
         success: function(data, textStatus, jqXHR) {
             alert('Message sent!');
+			window.location = "dashboard.html";
         },
         error: function(jqXHR, textStatus, errorThrown) {
             alert(textStatus);
@@ -198,32 +219,31 @@ function messagereply(id) {
     });
 }
 
-function newMessage() {
-    function MessageReplyData() {
+setInterval(function() {
+loadnavbar();
+}, 5000);
+
+function newMessageData() {
         return JSON.stringify({
             "api": window.localStorage.getItem("api"),
             "to": $("#sendmessageid").val(),
             "subject": $('#subject').val(),
             "contents": $('#contents').val(),
         });
-
-    }
+};
+function newMessage() {
     $.ajax({
         type: 'POST',
         contentType: 'application/json',
         url: domain + 'inbox',
         dataType: 'json',
-        data: MessageReplyData(),
+        data: newMessageData(),
         success: function(data, textStatus, jqXHR) {
             alert('Message sent!');
+			window.location = "dashboard.html";
         },
         error: function(jqXHR, textStatus, errorThrown) {
             alert(textStatus);
         }
     });
-}
-
-$(document).on("pageinit", "#calendar", function(event) {
-	            $(function() { 
-var map = new google.maps.Map(document.getElementById("map_canvas"), {zoom:5, center:new google.maps.LatLng(30.5133685,-87.8804408)});});
-});
+};

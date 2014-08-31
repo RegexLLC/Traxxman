@@ -1,9 +1,9 @@
 <?php
 
-        $con=mysqli_connect($host,$user,$pass,$db);
+        $con=mysqli_connect($dbhost,$dbuser,$dbpass,$dbname);
 
 
-        if (!$link = mysql_connect($host, $user, $pass)) {
+        if (!$link = mysql_connect($dbhost, $dbuser, $dbpass)) {
             echo $_GET['callback'] . '(' . "{'status' : 'Could not connect to mysql'}" . ')';
             exit;
         }

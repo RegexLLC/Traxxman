@@ -40,20 +40,11 @@
 		<img border="0" src="header.png" alt="Traxxman" style="position: center"/>
 		<a href="#home" data-role="button" data-icon="back">Back</a>
 	</div>
-	<h2>Inbox</h2>
-		<a href="#sendMessage">Send a message</a>
+	<h2 id="loadInboxStatus">Loading Inbox...</h2>
+		<a href="#sendMessage" data-role="button" data-theme="a">Send a message</a>
 		<ul data-role="listview" data-inset="true" id="messageslist">
 	</ul>
-<div data-role="popup" id="popupReply0" data-theme="a" class="ui-corner-all"></div>
-<div data-role="popup" id="popupReply1" data-theme="a" class="ui-corner-all"></div>
-<div data-role="popup" id="popupReply2" data-theme="a" class="ui-corner-all"></div>
-<div data-role="popup" id="popupReply3" data-theme="a" class="ui-corner-all"></div>
-<div data-role="popup" id="popupReply4" data-theme="a" class="ui-corner-all"></div>
-<div data-role="popup" id="popupReply5" data-theme="a" class="ui-corner-all"></div>
-<div data-role="popup" id="popupReply6" data-theme="a" class="ui-corner-all"></div>
-<div data-role="popup" id="popupReply7" data-theme="a" class="ui-corner-all"></div>
-<div data-role="popup" id="popupReply8" data-theme="a" class="ui-corner-all"></div>
-<div data-role="popup" id="popupReply9" data-theme="a" class="ui-corner-all"></div>
+		<div data-role="popup" id="popupReply0" data-theme="a" class="ui-corner-all"></div>
 
 	<div data-role="footer" data-theme="a">&nbsp;
 	</div>
@@ -65,6 +56,7 @@
 	</div>
 	<h2>Send a message</h2>
         <select name="sendmessageid" id="sendmessageid">
+		
           <option value="28">William Jokay</option>
           <option value="38">Ryan McCallum</option>
         </select>
@@ -85,7 +77,6 @@
 	</div>
 	<h2>Calendar</h2>
 	
-	<div id="map_canvas" style="width:150px;height:150px"></div>
 
 	<div data-role="footer" data-theme="a">
 		
@@ -98,8 +89,8 @@
 		<img border="0" src="header.png" alt="Traxxman" style="position: center"/>
 		<a href="#home" data-role="button" data-icon="back">Back</a>
 	</div>
-	<h2>Work Orders</h2>
-	<a href="#addworkorder">Add a work order</a>
+	<h2 id="workOrderStatus">Loading Work Orders...</h2>
+	<a href="#addworkorder" data-role="button" data-theme="a">Add a work order</a>
      <ul data-role="listview" id="workorderslist" name="workorderslist" class="workorderslist"></ul>
 		<div data-role="footer" data-theme="a">
 	</div>
@@ -110,16 +101,16 @@
 		<img border="0" src="header.png" alt="Traxxman" style="position: center"/>
 		<a href="#home" data-role="button" data-icon="back">Back</a>
 	</div>
-	<h2 id="status">Add Work Order</h2>
+	<h2 id="addWorkOrderStatus">Add Work Order</h2>
 	<div data-role="listview">
-		 Work Order Number: <input type="text" name="ordernumber" id="ordernumber"></input><br>
+		<input type="text" name="ordernumber" id="ordernumber" placeholder="Work Order #"></input><br>
 		<input type="button" value="Add Work Order" onclick="addWorkorders();"></form>
 	</div>
 	<div data-role="footer" data-theme="a">
 </div>
 </div>
 	
-	<div id="workorder" data-role="page" align="center" data-transition="slide">
+	<div id="workorderpage" data-role="page" align="center" data-transition="slide">
 	<div data-role="header" data-theme="a">
 		<img border="0" src="header.png" alt="Traxxman" style="position: center"/>
 		<a href="#home" data-role="button" data-icon="back">Back</a>

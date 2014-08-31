@@ -42,6 +42,16 @@ $app->get('/tools/timeconvert/:time', 'timeConvert');
 
 $app->run();
 
+function getConnection() {
+	    $dbhost = 'localhost';
+    $dbuser = 'root';
+    $dbpass = '123456';
+    $dbname = 'traxxman';
+	$dbh = new PDO("mysql:host=$dbhost;dbname=$dbname", $dbuser, $dbpass);	
+	$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+	return $dbh;
+}
+
 function getUsername($apikey) {
 	$sql = "select username FROM users WHERE `apikey` = '" .$apikey. "' LIMIT 1";
 	try {
@@ -431,17 +441,6 @@ function addEvent($id) {
 		error_log($e->getMessage(), 3, 'addeventlog.log');
 		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
 	}
-}
-
-
-function getConnection() {
-	$dbhost="localhost";
-	$dbuser="root";
-	$dbpass="";
-	$dbname="traxxman";
-	$dbh = new PDO("mysql:host=$dbhost;dbname=$dbname", $dbuser, $dbpass);	
-	$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-	return $dbh;
 }
 
 ?>

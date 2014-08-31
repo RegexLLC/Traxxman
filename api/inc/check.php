@@ -1,6 +1,6 @@
 <?php
 
-        $con=mysqli_connect($host,$user,$pass,$db);
+        $con=mysqli_connect($dbhost,$dbuser,$dbpass,$dbname);
 
 
         if (!$link = mysql_connect($host, $user, $pass)) {
@@ -22,7 +22,6 @@
            echo $_GET['callback'] . '(' . "{'status' : 'Available'}" . ')';
           
         }
-          //Else Username already exist
           else{
             echo $_GET['callback'] . '(' . "{'status' : 'Taken'}" . ')';
               
