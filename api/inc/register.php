@@ -13,7 +13,7 @@
             exit;
         }
 
-        if (!mysql_select_db($db, $link)) {
+        if (!mysql_select_db($dbname, $link)) {
             echo $_GET['callback'] . '(' . "{'status' : 'Could not select database'}" . ')';
             exit;
         }

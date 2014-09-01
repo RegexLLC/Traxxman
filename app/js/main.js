@@ -1,14 +1,14 @@
-var domain = "https://traxxman.com/Traxxman/api/";
 
+var domain = "http://192.168.1.79/Traxxman/api/";
 
 function check() {
 
     var un = document.getElementById('username').value;
     var action = 'check';
     $.getJSON(domain + 'proxy.php?callback=?', 'un=' + un + '&action=' + action, function(res) {
-
-        document.getElementById('result').innerHTML = '<b>' + res.status + '</b>';
-
+	                setTimeout(function() {
+                    $.bootstrapGrowl('The username "' + un + '" is ' + res.status + '!', { type: 'success' });
+                }, 1000);
     });
 
 }
@@ -21,19 +21,16 @@ function login() {
     var action = 'login';
 
     $.getJSON(domain + 'proxy.php?callback=?', 'un=' + un + '&pw=' + pw + '&action=' + action, function(res) {
-
         if (res.status == "success") {
-
+			api = res.api;
             window.localStorage.setItem("api", res.api);
-            window.location = "dashboard.html";
-
-            if (id != 'undefined') {
-                document.getElementById('message').innerHTML = res.api;
+            if (api != 'undefined') {
+                            window.location = "dashboard.html";
             } else {
-                document.getElementById('message').innerHTML = "Error logging in!";
+                document.getElementById('loginmessage').innerHTML = "Error logging in!";
             }
         } else {
-            document.getElementById('message').innerHTML = '<b>' + res.status + '</b>';
+            document.getElementById('loginmessage').innerHTML = res.status;
         }
     });
 }
@@ -46,7 +43,7 @@ function forgot() {
 
     $.getJSON(domain + 'proxy.php?callback=?', 'em=' + em + '&action=' + action, function(res) {
 
-        document.write('<b>' + res.status + '</b><br>');
+        document.write(res.status);
 
     });
 }
@@ -103,13 +100,17 @@ function logOutReady() {
 
 function formToJSONWOADD() {
     return JSON.stringify({
-        "ordernumber": "X" + $('#ordernumber').val(),
-        "user": window.localStorage.getItem("api"),
+        "ordernumber": $('#ordernumber').val(),
+        "api": window.localStorage.getItem("api"),
+		"ordertitle": $('#ordertitle').val(),
+		"orderlocation": $('#orderlocation').val()
     });
 }
 
 function loadworkorderslist() {
-	    var loadingworkorders = $.getJSON(domain + "workorders/" + window.localStorage.getItem("api"), function(data) {
+		    	$('#workOrdersList li').remove();
+
+	    $.getJSON(domain + "workorders/" + window.localStorage.getItem("api"), function(data) {
 				
         var splitme = data.workorderids;
         var workorders = splitme.split(', ');
@@ -118,13 +119,10 @@ function loadworkorderslist() {
 
             $.getJSON(domain + "workorders/" + value + "/" + window.localStorage.getItem("api"), function(data) {
                 $.getJSON(domain + "workorderaddress/" + value + "/" + window.localStorage.getItem("api"), function(addressdata) {
-                    $.getJSON(domain + "workorderaddress/" + value + "/" + window.localStorage.getItem("api"), function(addressdata) {
                         $.getJSON(domain + "workordertitle/" + value + "/" + window.localStorage.getItem("api"), function(titledata) {
-
-                            $('#workorderslist').append('<li><a href="#workorderpage"><img src="http://maps.googleapis.com/maps/api/staticmap?center=' + addressdata[0].eventdata + '&zoom=12&size=150x150&markers=color:red%7Clabel:A%7C' + addressdata[0].eventdata + '"></img><h2>' + value + '</h2><p>' + titledata[0].eventdata + '</p></a><a href="#mappage">' + addressdata[0].eventdata + '</a></li>');
-                            $('#workorderslist').listview().listview('refresh');
+                            $('#workOrdersList').append('<li><a href="#workorderpage"><img src="http://maps.googleapis.com/maps/api/staticmap?center=' + addressdata[0].eventdata + '&zoom=7&size=150x150&markers=color:red%7Clabel:A%7C' + addressdata[0].eventdata + '"></img><h2>' + titledata[0].eventdata + '</h2><p>Work Order #' + value + '</p></a><a href="#map-page">' + addressdata[0].eventdata + '</a></li>');
 							
-                        });
+                            $('#workOrdersList').listview().listview('refresh');
                     });
                 });
             });
@@ -135,7 +133,7 @@ function loadworkorderslist() {
 
 
 
-function addWorkorders() {
+function addWorkOrders() {
     var ordernumber = $('#ordernumber').val();
     $.ajax({
         type: 'POST',
@@ -144,10 +142,18 @@ function addWorkorders() {
         dataType: 'json',
         data: formToJSONWOADD(),
         success: function(data, textStatus, jqXHR) {
-            document.getElementById('addWorkOrderStatus').innerHTML = '<b>Work Order #' + ordernumber + ' Created</b>';
+			$(function() {
+                setTimeout(function() {
+                    $.bootstrapGrowl('<b>Work Order #' + ordernumber + ' Created</b>', { type: 'success' });
+                }, 1000);
+            });
         },
         error: function(jqXHR, textStatus, errorThrown) {
-            document.getElementById('addWorkOrderStatus').innerHTML = '<b>Work Order Error: ' + textStatus + '</b>';
+						$(function() {
+                setTimeout(function() {
+                    $.bootstrapGrowl('<b>Work Order Error: ' + textStatus + '</b>', { type: 'success' });
+                }, 1000);
+            });
         }
     });
 }
@@ -155,7 +161,7 @@ function addWorkorders() {
 	function loadnavbar() {
     $.getJSON(domain + "fullname/" + window.localStorage.getItem("api"), function(data) {
         document.getElementById('username').innerHTML = data[0].fullname;
-    });
+    }); 
     $.getJSON(domain + "workordercount/" + window.localStorage.getItem("api"), function(data) {
         document.getElementById('workordercount').innerHTML = data[0].workordercount + " Work Orders";
     });
@@ -165,32 +171,100 @@ function addWorkorders() {
 	};
 
 	function loadinbox() {
-    $.mobile.loading('show');
+    	$('#messageslist li').remove();
     $.getJSON(domain + "inbox/lastten/" + window.localStorage.getItem("api"), function(data) {
         for (var i = 0, l = data.messages.length; i < l; i++) {
             var obj = data.messages[i];
-            $('#messageslist').append('<li><a href="#popupReply' + i + '" data-rel="popup"><h3>' + obj.friendlyfrom + '</h3><p><strong>' + obj.subject + '</strong></p><p>' + obj.contents + '</p><p class="ui-li-aside"><strong>' + obj.timestamp + '</strong></p></a></li>');
-			
-            $('#popupReply' + i).append('<h3 style="padding top: 10px 10px;">' + obj.contents + '</h3><form><div style="padding:10px 10px;"><label for="reply" class="ui-hidden-accessible"></label><input type="text" placeholder="Message subject" name="subject" id="subject" data-theme="a"></input><textarea placeholder="Write your message..." name="contents" id="contents" data-theme="a""></textarea><br><button type="submit" data-theme="a" onclick="messagereply(' + obj.from + ')">Reply to ' + obj.friendlyfrom + '</button></div></form>');
-            $('#messageslist').listview().listview('refresh');
+            $('#messageslist').append('<li data-icon="mail"><a href="#popupReply' + i + '" data-rel="popup"><h3>' + obj.friendlyfrom + '</h3><p>' + obj.subject + '</p><p>' + obj.contents + '</p><p class="ui-li-aside">' + obj.timestamp + '</p></a></li>');
+            $('#popupReply' + i).append('<h3 style="padding top: 10px 10px;">' + obj.contents + '</h3><div style="padding:10px 10px;"><label for="reply" class="ui-hidden-accessible"></label><input type="text" placeholder="Message subject" name="subject" id="subject" data-theme="a"></input><textarea placeholder="Write your message..." name="contents" id="contents" data-theme="a"></textarea><br><button type="submit" data-theme="a" onclick="messagereply(' + obj.from + ')">Reply to ' + obj.friendlyfrom + '</button></div>');
 			$('#popupReply' + i).trigger("create");
 			$('#popupReply' + i).listview();
+            $('#messageslist').listview().listview('refresh');
         }
-		document.getElementById('loadInboxStatus').innerHTML = "Inbox";
     });
 };
 
-$(document).on("pageinit", "#home", function(event) {
-	loadnavbar();
+function loadinboxemployees() {
+    $.getJSON(domain + "employees/" + window.localStorage.getItem("api"), function(employees) {
+        console.log();
+		
+		        var splitme = employees.employeeids;
+        var employees = splitme.split(', ');
+
+        $.each(employees, function(index, value) {
+			console.log(index + value);
+    }); 
+})};
+
+function apicheck() {
+var api = window.localStorage.getItem("api");
+		if(api == null || api == false || api == "")
+							{
+					window.location = "index.html";
+				}
+// Next run apikey across the database /isvalid/api {status: "active", "inactive"}
+}
+
+
+
+
+
+$(document).on("pageinit", "#map-page", function(event) {
+$('#map_canvas').gmap().bind('init', function(evt, map) {
+	$('#map_canvas').gmap('getCurrentPosition', function(position, status) {
+		if ( status === 'OK' ) {
+			var image = '../ryan.jpg';
+			var clientPosition = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+			$('#map_canvas').gmap('addMarker', {'position': clientPosition, 'bounds': true, 'icon': image});
+			$('#map_canvas').gmap('addShape', 'Circle', { 
+				'strokeWeight': 0, 
+				'fillColor': "#008595", 
+				'fillOpacity': 0.25, 
+				'center': clientPosition, 
+				'radius': 35, 
+				'clickable': false,
+			});
+		}
+	});   
+});
+});
+
+$(document).on("pageshow", "#map-page", function(event) {
+	 $('#map_canvas').gmap('refresh');
+});
+
+$(document).on("pageshow", "#home", function(event) {
+loadnavbar();
+apicheck();
 });
 
 $(document).on("pageinit", "#workorders", function(event) {
+});
+
+$(document).on("pageshow", "#workorders", function(event) {
+		                setTimeout(function() {
+                    $.bootstrapGrowl("Loading your Work Orders...", { type: 'success' });
+                }, 1000);
 	loadworkorderslist();
 });
 
+
+
 $(document).on("pageinit", "#inbox", function(event) {
+	loadinboxemployees();
+
+});
+
+$(document).on("pageshow", "#inbox", function(event) {
+		                setTimeout(function() {
+                    $.bootstrapGrowl("Loading new messages...", { type: 'success' });
+                }, 1000);
 	loadinbox();
 });
+
+$(document).on("pageshow", "#sendMessage", function(event) {
+});
+
 
 function messagereply(id) {
     var to = id;
@@ -210,27 +284,30 @@ function messagereply(id) {
         dataType: 'json',
         data: MessageReplyData(),
         success: function(data, textStatus, jqXHR) {
-            alert('Message sent!');
-			window.location = "dashboard.html";
-        },
+$(function() {
+                setTimeout(function() {
+                    $.bootstrapGrowl("Message sent.", { type: 'success' });
+                }, 1000);
+            });        },
         error: function(jqXHR, textStatus, errorThrown) {
-            alert(textStatus);
-        }
+$(function() {
+                setTimeout(function() {
+                    $.bootstrapGrowl(textStatus, { type: 'danger' });
+                }, 1000);
+            });        }
     });
 }
 
-setInterval(function() {
-loadnavbar();
-}, 5000);
 
 function newMessageData() {
         return JSON.stringify({
             "api": window.localStorage.getItem("api"),
             "to": $("#sendmessageid").val(),
-            "subject": $('#subject').val(),
-            "contents": $('#contents').val(),
+            "subject": $('#newsubject').val(),
+            "contents": $('#newcontents').val(),
         });
 };
+
 function newMessage() {
     $.ajax({
         type: 'POST',
@@ -239,11 +316,18 @@ function newMessage() {
         dataType: 'json',
         data: newMessageData(),
         success: function(data, textStatus, jqXHR) {
-            alert('Message sent!');
-			window.location = "dashboard.html";
-        },
+$(function() {
+                setTimeout(function() {
+                    $.bootstrapGrowl("Message sent.", { type: 'success' });
+                }, 1000);
+            });        
+		},
         error: function(jqXHR, textStatus, errorThrown) {
-            alert(textStatus);
+            $(function() {
+                setTimeout(function() {
+                    $.bootstrapGrowl(textStatus, { type: 'danger' });
+                }, 1000);
+            });;
         }
     });
 };

@@ -1,6 +1,6 @@
 <?php
     $siteName = 'Traxxman';
-    $domain = 'https://traxxman.com';
+    $domain = '192.168.1.79/Traxxman';
     $dbhost = 'localhost';
     $dbuser = 'root';
     $dbpass = '123456';

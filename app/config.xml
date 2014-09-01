@@ -10,7 +10,7 @@
         Real world tracking for real world jobs
     </description>
 
-    <author href="http://phonegap.com" email="support@phonegap.com">
+    <author href="http://regex.systems" email="William@Regex.Systems">
         William Jokay Regex LLC
     </author>
 
@@ -91,7 +91,7 @@
     <gap:splash src="res/screen/ios/screen-ipad-landscape.png"          gap:platform="ios"     width="1024" height="768" />
     <gap:splash src="res/screen/windows-phone/screen-portrait.jpg"      gap:platform="winphone" />
 
-        <access origin="https://traxxman.com" />
+        <access origin="https://traxxman.com" subdomains="true"/>
 		<access origin="https://google.com" subdomains="true" />
 
 </widget>
