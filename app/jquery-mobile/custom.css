@@ -1,37 +1,29 @@
-@import url('//fonts.googleapis.com/css?family=Fira+Sans');
+@import url('//fonts.googleapis.com/css?family=Droid+Sans');
 
 h1 {
-  font-weight: bold;
   color: #000;
   font-size: 18px;
-	font-family: 'Fira Sans', sans-serif;
-}
+font-family: 'Droid Sans', sans-serif;}
 
 h2 {
-  font-weight: bold;
   color: #000;
   font-size: 14px;
-	font-family: 'Fira Sans', sans-serif;
-}
+font-family: 'Droid Sans', sans-serif;}
 h2 {
-  font-weight: bold;
   color: #000;
   font-size: 12px;
-	font-family: 'Fira Sans', sans-serif;
-}
+font-family: 'Droid Sans', sans-serif;}
 p {
-  font-weight: bold;
   color: #000;
-  font-size: 7px;
-	font-family: 'Fira Sans', sans-serif;
-}
+  font-size: 12px;
+font-family: 'Droid Sans', sans-serif;}
 li {
   font-weight: bold;
   color: #000;
-  font-size: 7px;
-	font-family: 'Fira Sans', sans-serif;
-}
-#map_canvas{
+  font-size: 9px;
+font-family: 'Droid Sans', sans-serif;}
+
+#map_canvas {
 padding: 5%;
 height:auto;
 position:absolute;
@@ -41,3 +33,50 @@ max-height:1600px;
 overflow:hidden;
 display:block;
 }
+
+a:link {
+    color: #000;
+	font-family: 'Droid Sans', sans-serif;
+}
+a:visited {
+    color: #000;
+		font-family: 'Droid Sans', sans-serif;
+
+}
+a:hover {
+    color: #000;
+		font-family: 'Droid Sans', sans-serif;
+
+}
+a:active {
+    color: #000;
+	font-family: 'Droid Sans', sans-serif;
+}
+	
+.modal {
+    display:    none;
+    position:   fixed;
+    z-index:    1000;
+    top:        0;
+    left:       0;
+    height:     100%;
+    width:      100%;
+    background: rgba( 255, 255, 255, .8 ) 
+                url('images/ajax-loader.gif') 
+                50% 50% 
+                no-repeat;
+}
+
+body.loading {
+    overflow: hidden;   
+}
+
+body.loading .modal {
+    display: block;
+}
+
+.placeholder
+{
+
+  font-size: 12px;
+font-family: 'Droid Sans', sans-serif;}}

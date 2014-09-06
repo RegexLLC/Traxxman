@@ -19,10 +19,10 @@
         
           if ($num_rows<1) {
             
-           echo $_GET['callback'] . '(' . "{'status' : 'Available'}" . ')';
+           echo $_GET['callback'] . '(' . "{'status' : ' is available'}" . ')';
           
         }
           else{
-            echo $_GET['callback'] . '(' . "{'status' : 'Taken'}" . ')';
+            echo $_GET['callback'] . '(' . "{'status' : ' is not available'}" . ')';
               
           }

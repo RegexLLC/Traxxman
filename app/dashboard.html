@@ -1,226 +1,215 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<meta charset="UTF-8">
-<meta charset="utf-8"/>
-<meta name="format-detection" content="telephone=no"/>
-<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, target-densitydpi=medium-dpi"/>
-<title>Traxxman</title>
+		<link href="jquery-mobile/jquery.mobile-1.4.3.min.css" rel="stylesheet" type="text/css" />
+	<link rel = "stylesheet" href = "jquery-mobile/jquery.mobile.iscrollview.css" / >
+	<link rel = "stylesheet" href = "jquery-mobile/jquery.mobile.iscrollview-pull.css" / >
+	<link rel="stylesheet" href="jquery-mobile/alertify.core.css" />
+	<link rel="stylesheet" href="jquery-mobile/alertify.default.css" id="toggleCSS" />
+	<link rel="stylesheet" href="jquery-mobile/custom.css" />
+	<meta charset="UTF-8">
+	<meta charset="utf-8" />
+	<meta name="format-detection" content="telephone=no" />
+	<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, target-densitydpi=medium-dpi" />
+	<title>Traxxman</title>
 </head>
+
 <body>
-<div page="home" id="home" data-role="page" align="center" data-transition="slide">
-	<div data-role="header" data-theme="a">
-		<img border="0" src="header.png" alt="Traxxman" style="position: center"/>
-		<div id="message"></div>
-
-		<nav data-role="navbar">
-		<ul>
-			<li><a href="#inbox" data-icon="mail" data-iconpos="left" id="messagescount">Loading...</a></li>
-			<li><a href="#workorders" data-icon="calendar " data-iconpos="left" id="workordercount">Loading...</a></li>
-			<li><a href="#myaccount" data-icon="user" data-iconpos="left" id="username">Loading...</a></li>
-		</ul>
-		</nav>
-	</div>
-		<div data-role="content" data-theme="a">
-		<ul data-role="listview">
-			<li><a href="#inbox" data-transition="slide">Inbox</a></li>
-			<li><a href="#calendar" data-transition="slide">Calendar</a></li>
-			<li><a href="#workorders" data-transition="slide">Work Orders</a></li>
-			<li><a href="#employees" data-transition="slide">Employees</a></li>
-			<li><a href="#myaccount" data-transition="slide">My Account</a></li>
-			<li><a onclick="logOutReady();">Logout</a></li>
-		</ul>
-	</div>
-	<div data-role="footer" data-theme="a">&nbsp;
-	</div>
-</div>
 	
-	<div id="inbox" data-role="page" align="center">
-	<div data-role="header" data-theme="a">
-		<img border="0" src="header.png" alt="Traxxman" style="position: center"/>
-		<a href="#home" data-role="button" data-icon="back">Back</a>
-	</div>
-	<h2 id="loadInboxStatus">Inbox</h2>
-		<a href="#sendMessage" data-role="button" data-theme="a" data-transition="pop">Send a message</a>
-		
-		
-		<ul data-role="listview" data-inset="true" id="messageslist">
-	</ul>
-		<div data-role="popup" id="popupReply0" data-theme="a" class="ui-corner-all"></div>
-		<div data-role="popup" id="popupReply1" data-theme="a" class="ui-corner-all"></div>
-		<div data-role="popup" id="popupReply2" data-theme="a" class="ui-corner-all"></div>
-		<div data-role="popup" id="popupReply3" data-theme="a" class="ui-corner-all"></div>
-		<div data-role="popup" id="popupReply4" data-theme="a" class="ui-corner-all"></div>
-		<div data-role="popup" id="popupReply5" data-theme="a" class="ui-corner-all"></div>
-		<div data-role="popup" id="popupReply6" data-theme="a" class="ui-corner-all"></div>
-		<div data-role="popup" id="popupReply7" data-theme="a" class="ui-corner-all"></div>
-		<div data-role="popup" id="popupReply8" data-theme="a" class="ui-corner-all"></div>
-		<div data-role="popup" id="popupReply9" data-theme="a" class="ui-corner-all"></div>
-
-		</div>
-	<div data-role="footer" data-theme="a">&nbsp;
-	</div>
-</div>
-	
-	
-	<div id="sendMessage" data-role="page" align="center">
-	<div data-role="header" data-theme="a">
-		<img border="0" src="header.png" alt="Traxxman" style="position: center"/>
-		<a href="#home" data-role="button" data-icon="back">Back</a>
-	</div>
-	<h2>Send a message</h2>
-		<div data-role="content" data-theme="a">
-        <select name="sendmessageid" id="sendmessageid">
-          <option value="28">William Jokay</option>
-          <option value="38">Ryan McCallum</option>
-        </select>
-	<input type="text" name="subject" id="newsubject" placeholder="Subject"></input>
-	<textarea name="contents" id="newcontents" placeholder="Your message here..."></textarea>
-		</div>
-	<input type="button" value="Send message" onclick="newMessage();"></form>
-	
-	<div data-role="footer" data-theme="a">&nbsp;
-	</div>
-</div>
-	
-<div id="calendar" data-role="page" align="center" data-transition="slide">
-	<div data-role="header" data-theme="a">
-		<img border="0" src="header.png" alt="Traxxman" style="position: center"/>
-		<a href="#home" data-role="button" data-icon="back">Back</a>
-	</div>
-	<h2>Calendar</h2>
-			<div data-role="content" data-theme="a">
-				</div>
-	
-
-	<div data-role="footer" data-theme="a">&nbsp;
-		
-	</div>
-</div>
-	
-	
-<div id="workorders" data-role="page" align="center" data-transition="slide">
-	<div data-role="header" data-theme="a">
-		<img border="0" src="header.png" alt="Traxxman" style="position: center"/>
-		<a href="#home" data-role="button" data-icon="back">Back</a>
-	</div>
-		<h2 id="workOrderStatus">Work Orders</h2>
+	<div page="home" id="home" data-role="page" align="center" data-transition="slide">
+		<div data-role="header" data-theme="a"  style="min-height: 30px;">&nbsp;</div>
+		<div id="header"><img src="header.png"></div>
+			<nav data-role="navbar">
+				<ul>		
+					<li><a href="#inbox" data-icon="mail" data-iconpos="left" id="messagescount"></a>
+					</li>
+					<li><a href="#workorders" data-icon="calendar " data-iconpos="left" id="workordercount"></a>
+					</li>
+					<li><a href="#myaccount" data-icon="user" data-iconpos="left" id="username"></a>
+					</li>
+				</ul>
+			</nav>
 			
-	<a href="#addworkorder" data-role="button" data-theme="a" data-transition="pop">Add a work order</a>
-	<div data-role="content" data-theme="a">
-     <ul data-role="listview" id="workOrdersList" name="workOrdersList" class="workorderslist"></ul>
-				</div>
-		<div data-role="footer" data-theme="a">&nbsp;
-	</div>
-	</div>
-	
-<div id="addworkorder" data-role="page" align="center" data-transition="flip">
-	<div data-role="header" data-theme="a">
-		<img border="0" src="header.png" alt="Traxxman" style="position: center"/>
-		<a href="#home" data-role="button" data-icon="back">Back</a>
-	</div>
-	<h2 id="addWorkOrderStatus">Add Work Order</h2>
-				<div data-role="content" data-theme="a">
-
-	<div data-role="listview">
-		<input type="text" name="ordernumber" id="ordernumber" placeholder="Work Order #"></input>
-		<input type="text" name="ordertitle" id="ordertitle" placeholder="Work Order Title"></input>
-		<input type="text" name="orderlocation" id="orderlocation" placeholder="Work Order Location"></input><br>
-		<input type="button" value="Add Work Order" onclick="addWorkOrders();">
-</div>
-	</div>
-	<div data-role="footer" data-theme="a">&nbsp;
-</div>
-</div>
-	
-	<div id="workorderpage" data-role="page" align="center" data-transition="slide">
-	<div data-role="header" data-theme="a">
-		<img border="0" src="header.png" alt="Traxxman" style="position: center"/>
-		<a href="#home" data-role="button" data-icon="back">Back</a>
-	</div>
-	<h2>Work Order Page</h2>
-						<div data-role="content" data-theme="a">
-     <ul data-role="listview" id="workorderslist" name="workorderslist" class="workorderslist"></ul>
-							</div>
-		<div data-role="footer" data-theme="a">&nbsp;
-	</div>
-	</div>
-
-<div id="employees" data-role="page" align="center" data-transition="slide">
-	<div data-role="header" data-theme="a">
-		<img border="0" src="header.png" alt="Traxxman" style="position: center"/>
-		<a href="#home" data-role="button" data-icon="back">Back</a>
-	</div>
-	<h2>Your Employees</h2>
-					<div data-role="content" data-theme="a">
-	<ul data-role="listview" data-inset="true">
 		
-		
-		<li><a href="#employeeprofile">
-		<img src="ryan.jpg">
-		<h2>Ryan McCallum</h2>
-		<p>
-			Last seen in Fairhope, AL
-		</p>
-		</a>
-		</ul>
-						
-						</div>
+
+		<div data-role="content" data-theme="a">
+			<ul data-role="listview">
+				<li><a href="#inbox" data-transition="slide">Inbox</a>
+				</li>
+				<li><a href="#calendar" data-transition="slide">Calendar</a>
+				</li>
+				<li><a href="#workorders" data-transition="slide">Work Orders</a>
+				</li>
+				<li><a href="#employees" data-transition="slide">Employees</a>
+				</li>
+				<li><a href="#myaccount" data-transition="slide">My Account</a>
+				</li>
+				<li><a href="javascript:void(0)" onclick="logOutReady();">Logout</a>
+				</li>
+			</ul>
+		</div>
 		<div data-role="footer" data-theme="a">&nbsp;
 		</div>
 	</div>
 
-	<div id="employeeprofile" data-role="page" align="center" data-transition="slide">
-		<div data-role="header" data-theme="a">
-			<img border="0" src="header.png" alt="Traxxman" style="position: center"/>
+	<div id="inbox" data-role="page" align="center">
+		<div data-role="header" data-theme="a"  style="min-height: 60px;">&nbsp;
+			<a href="#home" data-role="button" data-icon="back" style="margin-top: 15px;">Back</a>
+		</div>
+				<div id="header"><img src="header.png"></div>
+
+		<h2>Inbox</h2>
+		<div data-role="content" data-theme="a">
+					<a href="#sendMessage" data-role="button" data-theme="a" data-transition="pop">Send a message</a>
+			<ul data-role="listview" data-inset="true" id="messageslist">
+			</ul>
+		</div>
+		<div data-role="footer" data-theme="a">&nbsp;
+		</div>
+		
+	</div>
+
+
+	<div id="sendMessage" data-role="page" align="center">
+		<div data-role="header" data-theme="a" style="min-height: 50px;">&nbsp;
+			<a href="#home" data-role="button" data-icon="back">Back</a></div>
+			<div id="header"><img src="header.png"></div>
+
+		<div data-role="content" data-theme="a">
+			<select name="employeeinboxlist" id="employeeinboxlist"></select>
+			<input type="text" name="subject" id="newsubject" placeholder="Subject"></input>
+			<textarea name="contents" id="newcontents" placeholder="Your message here..."></textarea>
+		</div>
+
+		<a href="javascript:void(0)" data-role="button" value="Send message" onclick="newMessage();">Send message</a>
+
+		<div data-role="footer" data-theme="a">&nbsp;</div>
+	</div>
+
+
+	<div id="calendar" data-role="page" align="center" data-transition="slide">
+		<div data-role="header" data-theme="a" style="min-height: 55px;">
+			<a href="#home" data-role="button" data-icon="back" style="margin-top: 10px;">Back</a>
+		</div>
+				<div id="header"><img src="header.png"></div>
+
+		<h2>Calendar</h2>
+		<div data-role="content" data-theme="a">
+						
+
+		</div>
+
+
+		<div data-role="footer" data-theme="a">&nbsp;
+
+		</div>
+	</div>
+
+
+	<div id="workorders" data-role="page" align="center" data-transition="slide">
+		<div data-role="header" data-theme="a" style="min-height: 50px;">&nbsp;
 			<a href="#home" data-role="button" data-icon="back">Back</a>
 		</div>
+				<div id="header"><img src="header.png"></div>
+
+		<h2 id="workOrderStatus">Work Orders</h2>
+
+		<div data-role="content" data-theme="a">
+					<a href="#addworkorder" data-role="button" data-theme="a" data-transition="pop">Add a work order</a></div>
+				<div data-role="content" data-theme="a">
+			<ul data-role="listview" id="workOrdersList" name="workOrdersList" class="workorderslist"></ul>
+		</div>
+		<div data-role="footer" data-theme="a">&nbsp;
+		</div>
+	</div>
+
+	<div id="addworkorder" data-role="page" align="center" data-transition="flip">
+		<div data-role="header" data-theme="a">
+			<a href="#home" data-role="button" data-icon="back">Back</a>
+		</div>
+				<div id="header"><img src="header.png"></div>
+
+		<h2>Add Work Order</h2>
+		<div data-role="content" data-theme="a">
+			<div data-role="listview">
+				<input type="number" name="ordernumber" id="ordernumber" placeholder="Work Order #"></input>
+				<input type="text" name="ordertitle" id="ordertitle" placeholder="Work Order Title"></input>
+				<input type="text" name="orderlocation" id="orderlocation" placeholder="Work Order Location"></input>
+				<br>
+				<a href="javascript:void(0)" data-role="button" value="Add Work Order" onclick="addWorkOrders();">Add work order</a>
+			</div>
+		</div>
+		<div data-role="footer" data-theme="a">&nbsp;
+		</div>
+	</div>
+
+
+
+	<div id="employees" data-role="page" align="center" data-transition="slide">
+		<div data-role="header" data-theme="a" style="min-height: 50px;">&nbsp;
+			<a href="#home" data-role="button" data-icon="back">Back</a>
+		</div>
+				<div id="header"><img src="header.png"></div>
+
+		<h2>Your Employees</h2>
+		<div data-role="content" data-theme="a">
+			<a href="javascript:void(0)" data-role="button" value="Add Employee" onclick="addEmployee();">Add an Employee</a>
+			<ul data-role="listview" data-inset="true" id="employeelist">
+
+			</ul>
+		</div>
+		<div data-role="footer" data-theme="a">&nbsp;
+		</div>
+	</div>
+
+	<div id="addemployee" data-role="page" align="center" data-transition="slide">
+		<div data-role="header" data-theme="a">
+			<a href="#home" data-role="button" data-icon="back">Back</a>
+		</div>
+				<div id="header"><img src="header.png"></div>
+
+		<h2>Add an employee</h2>
+		<div data-role="content" data-theme="a">
 		
-		
-		<h2>Ryan's Profile</h2>
-		
-						<div data-role="content" data-theme="a">
-		<img src="ryan.jpg">
-							
-							</div>
+
+		</div>
 		<div data-role="footer" data-theme="a">&nbsp;
 		</div>
 	</div>
 
 	<div id="myaccount" data-role="page" align="center" data-transition="slide">
-		<div data-role="header" data-theme="a">
-			<img border="0" src="header.png" alt="Traxxman" style="position: center"/>
+		<div data-role="header" data-theme="a">&nbsp;
 			<a href="#home" data-role="button" data-icon="back">Back</a>
 		</div>
-		<h2>Your Account</h2>
-						<div data-role="content" data-theme="a">
-
-							
-							
-							</div>
+				<div id="header"><img src="header.png"></div>
+		<div role="main" class="ui-content">
+			<div class="ui-grid-a">
+				<div class="ui-block-a" style="height:100%">
+					<img style="height: 150px; width: 150px;" src="ryan.jpg" is="image">
+				</div>
+				<div class="ui-block-b" style="height:100%">
+					<div id="myaccountusername"></div>
+				</div>
+			</div>
+		</div>
 		<div data-role="footer" data-theme="a">&nbsp;
 		</div>
 	</div>
 
-<div data-role="page" id="map-page" data-url="map-page">
-<div id="map_canvas"></div>
-</div>
-		
-	</div>
 	<script src="jquery-mobile/jquery-1.11.1.min.js"></script>
 	<script src="jquery-mobile/jquery.mobile-1.4.3.min.js" type="text/javascript"></script>
-
 	<script type="text/javascript" src="js/main.js"></script>
-	<link href="jquery-mobile/jquery.mobile-1.4.3.min.css" rel="stylesheet" type="text/css"/>
-	<script src="https://maps-api-ssl.google.com/maps/api/js?sensor=true" type="text/javascript"</script>
-	<link rel="stylesheet" href="jquery-mobile/jquery.mobile.iscrollview.css" />
-	<link rel="stylesheet" href="jquery-mobile/jquery.mobile.iscrollview-pull.css" />
-	<script src="jquery-mobile/iscroll.js" type="text/javascript"></script>
+	<script src="https://maps-api-ssl.google.com/maps/api/js?sensor=true" type="text/javascript" </script>
+	<script src = "jquery-mobile/iscroll.js" type = "text/javascript" ></script>
 	<script src="jquery-mobile/jquery.mobile.iscrollview.js" type="text/javascript"></script>
-    <link rel="stylesheet" type="text/css" href="jquery-mobile/bootstrap.min.css">
-<script src="jquery-mobile/jquery.ui.map.full.min.js" type="text/javascript"></script>
-<script type="text/javascript" src="jquery-mobile/jquery.ui.map.extensions.js"></script>
-    <script src="jquery-mobile/jquery.bootstrap-growl.js"></script>
-	<link rel="stylesheet" href="jquery-mobile/custom.css" />
-	</body>
-	</html>
+	<script src="jquery-mobile/jquery.ui.map.full.min.js" type="text/javascript"></script>
+	<script type="text/javascript" src="jquery-mobile/jquery.ui.map.extensions.js"></script>
+	<script src="jquery-mobile/locationpicker.jquery.js"></script>
+	<script src="jquery-mobile/alertify.min.js"></script>
+
+<div class="modal"><!-- Place at bottom of page --></div>
+
+</body>
+
+</html>

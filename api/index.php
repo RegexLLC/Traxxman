@@ -38,16 +38,21 @@ $app->post('/workorders', 'addWorkorders');
 
 $app->get('/employees/:apikey', 'getEmployees');
 
-$app->get('/employees/:id', 'getEmployeeInfo');
+$app->get('/employeeinfo/:id', 'getEmployeeInfoList');
+
+$app->get('/employeefullname/:id', 'getEmployeeFullname');
 
 $app->post('/events/:id', 'addEvent');
 
 $app->get('/tools/phytogeo/:phy', 'phyToGeo');
 
+$app->get('/tools/apicheck/:apikey', 'apiCheck');
+
 $app->get('/tools/timeconvert/:time', 'timeConvert');
 
-$app->get('/tools/createmap/:location', 'createMap');
+$app->get('/tools/calcdistance/:origin/:destination', 'calcdistance');
 
+$app->get('/tools/createmap/:location', 'createMap');
 
 $app->run();
 
@@ -60,6 +65,17 @@ function getConnection() {
 	$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 	return $dbh;
 }
+
+function calcdistance($origin, $destination) {
+
+$url = 'http://maps.googleapis.com/maps/api/distancematrix/json?origins=' . $origin. '&destinations=' . $destination . '&mode=driving&language=en,EN';
+
+$result = file_get_contents($url);
+echo $result;
+	
+	
+}
+
 
 function getUsername($apikey) {
 	$sql = "select username FROM users WHERE `apikey` = '" .$apikey. "' LIMIT 1";
@@ -87,6 +103,24 @@ function getWorkOrderDetails($id, $apikey) {
 		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
 	}
 } 
+
+function apiCheck($apikey) {
+	$sql = "select id FROM users WHERE apikey='".$apikey."'";
+	try {
+		$db = getConnection();
+		$stmt = $db->query($sql);  
+		$users = $stmt->fetchAll(PDO::FETCH_OBJ);
+		$db = null;
+		if ($users == null) {
+		echo json_encode("not valid"); }
+		else {
+		echo json_encode("valid"); }
+	}
+		catch(PDOException $e) {
+		echo '{"error":{"text":'. $e->getMessage() .'}}'; }
+	
+} 
+
 
 function getWorkOrderAuthor($id, $apikey) {
 	//check that the "work order" ($id) is in usertable column allowed work orders
@@ -364,62 +398,9 @@ function phyToGeo($phy) {
 	echo ($json['results'][0]['geometry']['location']['lat'] . "," . $json['results'][0]['geometry']['location']['lng']);
 	}
 
-
+ 
 function timeConvert($time) {
 	return date("m/d/Y h:i a");
-	}
-
-function GMapCircle($Lat,$Lng,$Rad,$Detail=8){
-  $R    = 6371;
- 
-  $pi   = pi();
- 
-  $Lat  = ($Lat * $pi) / 180;
-  $Lng  = ($Lng * $pi) / 180;
-  $d    = $Rad / $R;
- 
-  $points = array();
-  $i = 0;
- 
-  for($i = 0; $i <= 360; $i+=$Detail):
-    $brng = $i * $pi / 180;
- 
-    $pLat = asin(sin($Lat)*cos($d) + cos($Lat)*sin($d)*cos($brng));
-    $pLng = (($Lng + atan2(sin($brng)*sin($d)*cos($Lat), cos($d)-sin($Lat)*sin($pLat))) * 180) / $pi;
-    $pLat = ($pLat * 180) /$pi;
- 
-    $points[] = array($pLat,$pLng);
-  endfor;
- 
-  require_once('polylineencoder.php');
-  $PolyEnc   = new PolylineEncoder($points);
-  $EncString = $PolyEnc->dpEncode();
- 
-  return $EncString['Points'];
-}
-
-function createMap($location) {
-	$address = str_replace(" ", "+", $location);
-	$url = "https://maps-api-ssl.google.com/maps/api/geocode/json?sensor=false&address=$address";
-	$response = file_get_contents($url);
-	$json = json_decode($response, TRUE);
-	$lat = $json['results'][0]['geometry']['location']['lat'];
-	$lng = $json['results'][0]['geometry']['location']['lng'];
-	$MapLat    = $lat; // latitude for map and circle center
-$MapLng    = $lng; // longitude as above
-$MapRadius = 1;         // the radius of our circle (in Kilometres)
-$MapFill   = 'E85F0E';    // fill colour of our circle
-$MapBorder = '91A93A';    // border colour of our circle
-$MapWidth  = 150;         // map image width (max 640px)
-$MapHeight = 150;         // map image height (max 640px)
- 
-$EncString = GMapCircle($MapLat,$MapLng, $MapRadius);
- 
-/* put together the static map URL */
-$MapAPI = 'https://maps.googleapis.com/maps/api/staticmap?';
-$MapURL = $MapAPI.'center='.$MapLat.','.$MapLng.'&size='.$MapWidth.'x'.$MapHeight.'&maptype=roadmap&path=fillcolor:0x'.$MapFill.'33%7Ccolor:0x'.$MapBorder.'00%7Cenc:'.$EncString.'&zoom=11&sensor=true&markers=color:red%7C'.$address;
- 
-echo $MapURL;
 	}
 
 
@@ -477,11 +458,58 @@ function getEmployees($apikey) {
 	
 }
 
+function getEmployeeInfoList($id) {
+	// add api key as an argument and check that $id is in users employeeids
+	$sql = "select fullname, avatarurl, lastseen FROM users WHERE `id` = '" .$id. "' LIMIT 1";
+	try {
+		$db = getConnection();
+		$stmt = $db->query($sql);  
+		$info = $stmt->fetchAll(PDO::FETCH_OBJ);
+		$db = null;
+		echo json_encode($info);
+		}
+		catch(PDOException $e) {
+		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
+	}
+	
+}
+
+function getEmployeeFullname($id) {
+	// add api key as an argument and check that $id is in users employeeids
+	$sql = "select fullname from users WHERE `id` = '" .$id. "' LIMIT 1";
+	try {
+		$db = getConnection();
+		$stmt = $db->query($sql);  
+		$info = $stmt->fetchAll(PDO::FETCH_OBJ);
+		$db = null;
+		echo json_encode($info);
+		}
+		catch(PDOException $e) {
+		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
+	}
+	
+}
+function getEmployeeInfo($id, $apikey) {
+	// add api key as an argument and check that $id is in users employeeids
+	$sql = "select username, fullname, email, company, timezone, employees,  usedemployees, activeworkorder, lastseen FROM users WHERE `id` = '" .$id. "' LIMIT 1";
+	try {
+		$db = getConnection();
+		$stmt = $db->query($sql);  
+		$info = $stmt->fetchAll(PDO::FETCH_OBJ);
+		$db = null;
+		var_dump($info);
+		}
+		catch(PDOException $e) {
+		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
+	}
+	
+}
+
 function addWorkOrders() {
 	error_log('addWorkOrders\n', 3, 'workorderserrors.log');
 	$request = Slim::getInstance()->request();
 	$userdata = json_decode($request->getBody());
-	$orderinfo = "X" . $userdata->ordernumber;
+	$orderinfo = "x" . $userdata->ordernumber;
 	$api = $userdata->api;
 	$orderlocation = $userdata->orderlocation;
 	$ordertitle = $userdata->ordertitle;
@@ -586,5 +614,58 @@ function addEvent($id) {
 		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
 	}
 }
+
+function GMapCircle($Lat,$Lng,$Rad,$Detail=8){
+  $R    = 6371;
+ 
+  $pi   = pi();
+ 
+  $Lat  = ($Lat * $pi) / 180;
+  $Lng  = ($Lng * $pi) / 180;
+  $d    = $Rad / $R;
+ 
+  $points = array();
+  $i = 0;
+ 
+  for($i = 0; $i <= 360; $i+=$Detail):
+    $brng = $i * $pi / 180;
+ 
+    $pLat = asin(sin($Lat)*cos($d) + cos($Lat)*sin($d)*cos($brng));
+    $pLng = (($Lng + atan2(sin($brng)*sin($d)*cos($Lat), cos($d)-sin($Lat)*sin($pLat))) * 180) / $pi;
+    $pLat = ($pLat * 180) /$pi;
+ 
+    $points[] = array($pLat,$pLng);
+  endfor;
+ 
+  require_once('polylineencoder.php');
+  $PolyEnc   = new PolylineEncoder($points);
+  $EncString = $PolyEnc->dpEncode();
+ 
+  return $EncString['Points'];
+}
+
+function createMap($location) {
+	$address = str_replace(" ", "+", $location);
+	$url = "https://maps-api-ssl.google.com/maps/api/geocode/json?sensor=false&address=$address";
+	$response = file_get_contents($url);
+	$json = json_decode($response, TRUE);
+	$lat = $json['results'][0]['geometry']['location']['lat'];
+	$lng = $json['results'][0]['geometry']['location']['lng'];
+	$MapLat    = $lat; // latitude for map and circle center
+$MapLng    = $lng; // longitude as above
+$MapRadius = 1;         // the radius of our circle (in Kilometres)
+$MapFill   = 'E85F0E';    // fill colour of our circle
+$MapBorder = '91A93A';    // border colour of our circle
+$MapWidth  = 150;         // map image width (max 640px)
+$MapHeight = 150;         // map image height (max 640px)
+ 
+$EncString = GMapCircle($MapLat,$MapLng, $MapRadius);
+ 
+/* put together the static map URL */
+$MapAPI = 'https://maps.googleapis.com/maps/api/staticmap?';
+$MapURL = $MapAPI.'center='.$MapLat.','.$MapLng.'&size='.$MapWidth.'x'.$MapHeight.'&maptype=roadmap&path=fillcolor:0x'.$MapFill.'33%7Ccolor:0x'.$MapBorder.'00%7Cenc:'.$EncString.'&zoom=11&sensor=true&markers=color:red%7C'.$address;
+ 
+echo json_encode($MapURL);
+	}
 
 ?>
