@@ -4,7 +4,13 @@ require 'Slim/Slim.php';
 
 $app = new Slim();
 
+$app->get('/profile/:id', 'getProfile');
+
+$app->get('/myaccount/:apikey', 'myAccount');
+
 $app->get('/username/:apikey',	'getUsername');
+
+$app->get('/avatar/:id/:api',	'getAvatar');
 
 $app->get('/fullname/:apikey',	'getfullName');
 
@@ -32,6 +38,8 @@ $app->get('/workorderaddress/:id/:apikey', 'getWorkOrderLocation');
 
 $app->get('/workordertitle/:id/:apikey', 'getWorkOrderTitle');
 
+$app->get('/workorderlistinfo/:id/:apikey', 'getWorkOrderList');
+
 $app->get('/workordercount/:apikey', 'workOrderCount');
 
 $app->post('/workorders', 'addWorkorders');
@@ -57,7 +65,7 @@ $app->get('/tools/createmap/:location', 'createMap');
 $app->run();
 
 function getConnection() {
-	    $dbhost = 'localhost';
+	$dbhost = 'localhost';
     $dbuser = 'root';
     $dbpass = '123456';
     $dbname = 'traxxman';
@@ -66,14 +74,30 @@ function getConnection() {
 	return $dbh;
 }
 
-function calcdistance($origin, $destination) {
+	function getProfile($id) {
+	$sql = "select mobile, email, company, timezone, avatarurl, fullname, activeworkorder, lastseen FROM users WHERE `id` = " .$id;
+	try {
+		$db = getConnection();
+		$stmt = $db->query($sql);  
+		$data = $stmt->fetchAll(PDO::FETCH_OBJ);
+		$db = null;
+		echo json_encode($data);
+	} catch(PDOException $e) {
+		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
+	}
+}
 
-$url = 'http://maps.googleapis.com/maps/api/distancematrix/json?origins=' . $origin. '&destinations=' . $destination . '&mode=driving&language=en,EN';
-
-$result = file_get_contents($url);
-echo $result;
-	
-	
+	function myAccount($apikey) {
+	$sql = 'select mobile, email, timezone, company, employees, usedemployees, avatarurl, fullname, activeworkorder, lastseen FROM users WHERE `apikey` = "' .$apikey. '"';
+	try {
+		$db = getConnection();
+		$stmt = $db->query($sql);  
+		$data = $stmt->fetchAll(PDO::FETCH_OBJ);
+		$db = null;
+		echo json_encode($data);
+	} catch(PDOException $e) {
+		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
+	}
 }
 
 
@@ -90,9 +114,25 @@ function getUsername($apikey) {
 	}
 } 
 
+
+
+function getAvatar($id, $api) {
+	$sql = "select avatarurl FROM users WHERE `id` = '" .$id. "' LIMIT 1";
+	try {
+		$db = getConnection();
+		$stmt = $db->query($sql);  
+		$users = $stmt->fetchAll(PDO::FETCH_OBJ);
+		$db = null;
+		echo json_encode($users);
+	} catch(PDOException $e) {
+		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
+	}
+} 
+
+
 function getWorkOrderDetails($id, $apikey) {
 	//check that the "work order" ($id) is in usertable column allowed work orders
-	$sql = "select * FROM " .$id;
+	$sql = "select * FROM " .$id. " LIMIT 10";
 	try {
 		$db = getConnection();
 		$stmt = $db->query($sql);  
@@ -163,6 +203,30 @@ function getWorkOrderTitle($id, $apikey) {
 	}
 } 
 
+function getWorkOrderList($id, $apikey) {
+	//check that the "work order" ($id) is in usertable column allowed work orders
+	$sql = "SELECT eventdata FROM ".$id." WHERE eventtype = 'title'";
+	try {
+		$db = getConnection();
+		$stmt = $db->query($sql);  
+		$title = $stmt->fetchAll(PDO::FETCH_OBJ);
+		$db = null;
+		} catch(PDOException $e) {
+		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
+	}
+		$sql = "SELECT eventdata FROM ".$id." WHERE eventtype = 'jobsite'";
+	try {
+		$db = getConnection();
+		$stmt = $db->query($sql);  
+		$jobsite = $stmt->fetchAll(PDO::FETCH_OBJ);
+		$db = null;
+		echo json_encode($title);
+		echo json_encode($jobsite);
+		} catch(PDOException $e) {
+		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
+}
+}
+
 function getWorkOrderEvents($id, $events, $apikey) {
 	//check that the "work order" ($id) is in usertable column allowed work orders
 	$sql = "select * FROM " .$id. " WHERE `eventtype` = '".$events."'";
@@ -171,7 +235,7 @@ function getWorkOrderEvents($id, $events, $apikey) {
 		$stmt = $db->query($sql);  
 		$users = $stmt->fetchAll(PDO::FETCH_OBJ);
 		$db = null;
-		echo json_encode($users);
+		echo '{"'.$events.'": ' . json_encode($users) . '}';
 		} catch(PDOException $e) {
 		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
 	}
@@ -185,6 +249,7 @@ function sendMessage() {
 	$timestamp = timeConvert(time());
 	$apikey = $msgdata->api;
 	$to = $msgdata->to;
+	$toid = $msgdata->to;
 	$sql = "select fullname FROM users WHERE `id` = '" .$msgdata->to. "' LIMIT 1";
 	try {
 		$db = getConnection();
@@ -235,6 +300,7 @@ function sendMessage() {
 	} catch(PDOException $e) {
 		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
 	}
+	
 		$sql = "select id FROM users WHERE `apikey` = '" .$apikey. "' LIMIT 1";
 	try {
 		$db = getConnection();
@@ -249,6 +315,29 @@ function sendMessage() {
 	$from = json_decode($fromid);
 	$location = "Daphne, AL";
 	$read = "0";
+	$sql = "select unreadmessages FROM users WHERE `id` = '" .$toid. "' LIMIT 1";
+	try {
+		$db = getConnection();
+		$stmt = $db->query($sql);  
+		$msgs = $stmt->fetchAll(PDO::FETCH_OBJ);
+		$db = null;
+	} catch(PDOException $e) {
+		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
+	}
+	
+	$newcount = $msgs[0]->unreadmessages;
+	
+	$newcount += 1;
+	
+$sql = 'UPDATE users SET unreadmessages='. $newcount . ' WHERE id=' . $toid;
+		try {
+		$db = getConnection();
+		$stmt = $db->query($sql);  
+		$db = null;
+		}
+		catch(PDOException $e) {
+		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
+	}
 	$sql = 'INSERT INTO `traxxman`.`inbox` (`id`, `subject`, `from`, `friendlyfrom`, `to`, `friendlyto`, `contents`, `location`, `timestamp`, `read`) VALUES (NULL, :subject, :from, :friendlyfrom, :to, :friendlyto, :contents, :location, :timestamp, '.$read.')';
 	try {
 		$db = getConnection();
@@ -523,6 +612,11 @@ function addWorkOrders() {
 	} catch(PDOException $e) {
 		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
 	}
+	$address = str_replace(" ", "+", $orderlocation);
+	$url = "http://maps.google.com/maps/api/geocode/json?sensor=false&address=$address";
+	$response = file_get_contents($url);
+	$json = json_decode($response, TRUE);
+	$ordercoords = ($json['results'][0]['geometry']['location']['lat'] . "," . $json['results'][0]['geometry']['location']['lng']);
 	$sql = 
 	"CREATE TABLE " . $orderinfo . " 
 	(event INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
@@ -544,7 +638,12 @@ function addWorkOrders() {
 	INSERT INTO " . $orderinfo . " 
 	(eventtype, eventdata, user, timestamp) 
 	VALUES 
-	('title', '" . $ordertitle . "', :user, :timestamp);"
+	('title', '" . $ordertitle . "', :user, :timestamp);
+	
+		INSERT INTO " . $orderinfo . " 
+	(eventtype, eventdata, user, timestamp) 
+	VALUES 
+	('jobcoords', '" . $ordercoords . "', :user, :timestamp);"
 		;
 	try {
 		$db = getConnection();
@@ -585,7 +684,7 @@ function addWorkOrders() {
 		$db = getConnection();
 		$stmt = $db->query($sql);  
 		$db = null;
-			echo json_encode($userdata);
+		echo json_encode('Success');
 		}
 		catch(PDOException $e) {
 		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
@@ -608,12 +707,14 @@ function addEvent($id) {
 		$stmt->bindParam("timestamp", $timestamp);
 		$stmt->execute();
 		$db = null;
-		echo json_encode($userdata); 
+		echo json_encode('Success');
 	} catch(PDOException $e) {
 		error_log($e->getMessage(), 3, 'addeventlog.log');
 		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
 	}
 }
+
+
 
 function GMapCircle($Lat,$Lng,$Rad,$Detail=8){
   $R    = 6371;

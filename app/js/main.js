@@ -1,23 +1,53 @@
 var domain = "https://Traxxman.com/api/";
-//var domain = "http://192.168.78.1/Traxxman/api/";
+var domain = "http://192.168.78.1/Traxxman/api/";
 
-$.mobile.phonegapNavigationEnabled = true
+$body = $("body");
+
+
+$(document).on("pagebeforeshow", "#sendMessage", function (event) {
+	loadinboxemployees();
+});
+
+$(document).on("pageinit", "#home", function (event) {
+});
+
+$(document).on("pagebeforeshow", "#home", function (event) {
+	apicheck();
+	loadnavbar();
+});
+
+$(document).on("pagebeforeshow", "#workorders", function (event) {
+	alertify.success("Loading work orders...");
+	loadworkorderslist();
+});
+
+
+
+$(document).on("pagebeforeshow", "#inbox", function (event) {
+	alertify.success("Loading inbox...");
+	loadinbox();
+});
+
+$(document).on("beforepageshow", "#employees", function (event) {
+	alertify.success("Loading your employees...");
+	loademployees();
+});
+
 
 function check() {
-
 	var un = document.getElementById('username').value;
 	var action = 'check';
 	$.getJSON(domain + 'proxy.php?callback=?', 'un=' + un + '&action=' + action, function (res) {
-					alertify.success('The username ' + un + res.status + '!');
-	});
-
+		alertify.success('The username ' + un + res.status + '!');
+	}).fail( function(d, textStatus, error) {
+		alertify.error("Could not connect to Traxxman Cloud");
+    });
 }
 
-function login() {
 
+function login() {
 	var un = document.getElementById("username").value;
 	var pw = document.getElementById("password").value;
-
 	var action = 'login';
 
 	$.getJSON(domain + 'proxy.php?callback=?', 'un=' + un + '&pw=' + pw + '&action=' + action, function (res) {
@@ -30,11 +60,13 @@ function login() {
 				alertify.error("Error logging in!");
 			}
 		} else {
-			alertify.success(res.status)
-		}
-	});
+			alertify.success(res.status);
+		}})
+		.fail( function(d, textStatus, error) {
+		alertify.error("Could not connect to Traxxman Cloud");
+    })
 }
-
+				
 function forgot() {
 
 	var em = document.getElementById("email").value;
@@ -47,26 +79,28 @@ function forgot() {
 }
 
 function signup() {
+	$("register").prop('disabled', true);
 	var un = document.getElementById('username').value;
 	var em = document.getElementById('email').value;
 	var pw = document.getElementById('password').value;
 	var pw2 = document.getElementById('password2').value;
 	var action = 'reg';
-	if (document.getElementById('email').value == '' || document.getElementById('username').value == '' || document.getElementById('password').value == '' || document.getElementById('password2').value == '') {
+	if (document.getElementById('email').value === '' || document.getElementById('username').value === '' || document.getElementById('password').value === '' || document.getElementById('password2').value === '') {
 		alertify.error("All fields must be completed");
+		$("register").prop('disabled', false);
 	} else {
 		if (pw == pw2) {
 			$.getJSON(domain + 'proxy.php?callback=?', 'un=' + un + '&pw=' + pw + '&em=' + em + '&action=' + action, function (res) {
-
-
 				if (res.status == 'That does not appear to be a valid email address') {
-					alert.error(res.status);
+					$("register").prop('disabled', false);
+					alertify.error(res.status);
 				} else {
 					alertify.success(res.status);
 					document.getElementById('email').value = '';
 					document.getElementById('username').value = '';
 					document.getElementById('password').value = '';
 					document.getElementById('password2').value = '';
+					$("register").prop('disabled', false);
 				}
 				if (res.status == 'That email address is already registed with Traxxman') {
 					alerify.error(res.status);
@@ -76,15 +110,18 @@ function signup() {
 					document.getElementById('username').value = '';
 					document.getElementById('password').value = '';
 					document.getElementById('password2').value = '';
+					$("register").prop('disabled', false);
 				}
-
-			});
+			}
+					 ).fail( function(d, textStatus, error) {
+		alertify.error("Could not connect to Traxxman Cloud");
+				$("register").prop('disabled', false);
+    });
 		} else {
 			alertify.error("Your passwords do not match");
+			$("register").prop('disabled', false);
 		}
 	}
-
-
 }
 
 function logOutReady() {
@@ -92,7 +129,6 @@ function logOutReady() {
 	window.location = "index.html";
 }
 
-$body = $("body");
 
 $(document).on({
     ajaxStart: function() { $body.addClass("loading");    },
@@ -101,32 +137,18 @@ $(document).on({
 
 function loadworkorderslist() {
 	$('#workOrdersList li').remove();
-
-	$.getJSON(domain + "workorders/" + window.localStorage.getItem("api"), function (data) {
-
+	var api = window.localStorage.getItem("api");
+	$.getJSON(domain + "workorders/" + api, function (data) {
 		var splitme = data.workorderids;
 		var workorders = splitme.split(', ');
-
 		$.each(workorders, function (index, value) {
-			$.getJSON(domain + "workorders/" + value + "/" + window.localStorage.getItem("api"), function (data) {
-				$.getJSON(domain + "workorderaddress/" + value + "/" + window.localStorage.getItem("api"), function (addressdata) {
-					$.getJSON(domain + "workordertitle/" + value + "/" + window.localStorage.getItem("api"), function (titledata) {
-						var ordernumber = value.replace('x',' ');
-						$.getJSON(domain + "tools/createmap/" + addressdata[0].eventdata, function (addressdata) {
-	$('#workOrdersList').append('<li><a href="javascript:void(0)" onclick="createWorkOrderPage(' + "'" + value + "'" + ')"><img src="' + addressdata + '"></img><h2>'+ titledata[0].eventdata + '</h2><p>Work Order #' + ordernumber + '</p></a></li>');
-								
-								
-							$('#workOrdersList').listview().listview('refresh');
-						
-						});
-					});
-				});
-			});
-		});
-	});
-};
-
-
+		$.getJSON(domain + "workorderaddress/" + value + "/" + api, function (addressdata) {
+		$.getJSON(domain + "workordertitle/" + value + "/" + api, function (titledata) {
+		var ordernumber = value.replace('x','');
+		$.getJSON(domain + "tools/createmap/" + addressdata[0].eventdata, function (addressdata) {
+	$('#workOrdersList').append('<li><a href="javascript:void(0)" onclick="createWorkOrderPage(' + "'" + value + "'" + ')"><img src="' + addressdata + '"></img><h2>'+ titledata[0].eventdata + '</h2><p>Work Order #' + ordernumber + '</p></a></li>');			
+	$('#workOrdersList').listview().listview('refresh');
+						}); }); }); }); }); };
 
 
 function addWorkOrders() {
@@ -144,7 +166,7 @@ function addWorkOrders() {
 	document.getElementById('ordernumber').value = '';
 	document.getElementById('ordertitle').value = '';
 	document.getElementById('orderlocation').value = '';
-	window.location = "dashboard.html#workorders";
+	window.location = "dashboard.html#home";
 	$.ajax({
 		type: 'POST',
 		contentType: 'application/json',
@@ -153,25 +175,26 @@ function addWorkOrders() {
 		data: formToJSONWOADD(),
 		success: function (data, textStatus, jqXHR) {
 			$(function () {
-				alertify.success('<b>Work Order #' + ordernumber + ' Created</b>');
+				alertify.success('Work Order #' + ordernumber + ' created');
 			});
 		},
 		error: function (jqXHR, textStatus, errorThrown) {
 			$(function () {
-				alertify.error('<b>Work Order Error: ' + textStatus + '</b>');
+				alertify.error('Error adding work order');
 			});
 		}
 	});
 };
 
 function loadnavbar() {
-	$.getJSON(domain + "fullname/" + window.localStorage.getItem("api"), function (data) {
-		document.getElementById('username').innerHTML = "<p>" + data[0].fullname + "</p>";
+	var api = window.localStorage.getItem("api");
+	$.getJSON(domain + "fullname/" + api, function (data) {
+		document.getElementById('myaccountusername').innerHTML = "<p>" + data[0].fullname + "</p>";
 	});
-	$.getJSON(domain + "workordercount/" + window.localStorage.getItem("api"), function (data) {
+	$.getJSON(domain + "workordercount/" + api, function (data) {
 		document.getElementById('workordercount').innerHTML = "<p>" + data[0].workordercount + " Work Orders</p>";
 	});
-	$.getJSON(domain + "messagescount/" + window.localStorage.getItem("api"), function (data) {
+	$.getJSON(domain + "messagescount/" + api, function (data) {
 		document.getElementById('messagescount').innerHTML = "<p>" + data[0].unreadmessages + " Messages</p>";
 	});
 };
@@ -181,33 +204,35 @@ function loadinbox() {
 	$.getJSON(domain + "inbox/lastten/" + window.localStorage.getItem("api"), function (data) {
 		for (var i = 0, l = data.messages.length; i < l; i++) {
 			var obj = data.messages[i];
-			$('#messageslist').append('<li data-icon="mail"><a href="javascript:void(0)" id="popUpReply" data-rel="popup"><img src="https://traxxman.com/app/ljsmall.png"><h3>' + obj.friendlyfrom + '</h3><p>' + obj.subject + '</p></a></li>');
-			$('#messageslist').listview('refresh');
+			$.getJSON(domain + "avatar/" + obj.from + "/" + window.localStorage.getItem("api"), function (zedata) {
+				avatarurl = zedata[0].avatarurl;
+	$('#messageslist').append('<li data-icon="mail"><a href="javascript:void(0)" onclick="createReply('+ obj.id +');"><img src="images/avatars/' + avatarurl + '"><h3>' + obj.friendlyfrom + '</h3><p>' + obj.subject + '</p></a></li>');
+			$('#messageslist').listview('refresh');	
+				});
 		}
-	});
+		});
 };
 
-
-
-function loademployees() {
-	$.getJSON(domain + "employees/" + window.localStorage.getItem("api"), function (employees) {
-		var splitme = employees.employeeids;
-		var employees = splitme.split(', ');
-		$.each(employees, function (index, value) {
-		$('#employeelist').append('<li><a href="#employeeprofile"><img src="ljsmall.png"><h2>' + value + '</h2><p>Last seen in XX</p></a></li>')
-		$('#employeelist').listview().listview('refresh');
-	})
-})
+function createReply (msgid) {
+alertify.prompt("This is a prompt dialog " + msgid, function (e, str) {
+				if (e) {
+					alertify.success("Sending your message to " + str);
+				} else {
+					alertify.error("Reply cancelled");
+				}
+			}, "Your reply...");
+			return false;
 }
 
 
 function loadinboxemployees() {
+			$('#employeeinboxlist li').remove();
 	$.getJSON(domain + "employees/" + window.localStorage.getItem("api"), function (employees) {
 		var splitme = employees.employeeids;
 		var employees = splitme.split(', ');
 		$.each(employees, function (index, value) {
 			$.getJSON(domain + "employeefullname/" + value, function (namedata) {
-				$('#employeeinboxlist').append('<option value="'+value+'">'+namedata[0].fullname+'</option>');
+				$('#employeeinboxlist').append('<option value="' + value + '">'+ namedata[0].fullname + '</option>');
 			$('#employeeinboxlist').selectmenu();
 					$('#employeeinboxlist').selectmenu('refresh');
 	});
@@ -217,97 +242,55 @@ function loadinboxemployees() {
 	})
 }
 
+function isloggedin() {
+	var api = window.localStorage.getItem("api");
+	if (api == null || api == false || api == "") {
+		} else {
+		alertify.success("Logging you in...");
+		$.getJSON(domain + "tools/apicheck/" + api, function (validation) {
+	if (validation == "valid")
+	{
+		window.location = "dashboard.html";
+	} else {
+	alertify.error("Please re-login");	
+	}
+	}).fail( function(d, textStatus, error) {
+					alertify.error("Could not connect to Traxxman Cloud");
+
+    });
+}}
+
+
 function apicheck() {
 	var api = window.localStorage.getItem("api");
+	if (api === null || api === false || api === "") {
+		window.location = "index.html";
+		} else {
 		$.getJSON(domain + "tools/apicheck/" + api, function (validation) {
-	if (api == null || api == false || api == "" || validation !== "valid")
+	if (validation !== "valid")
 	{
 		window.location = "index.html";
 	}
-	});
-}
+	}).fail( function(d, textStatus, error) {
+		window.localStorage.removeItem("api");
+					alertify.error("Could not connect to Traxxman Cloud");
+
+    });
+}}
 
 
-function loadtasks() {
-$('#tasks').controlgroup("container").append('<label for="chk"><input type="checkbox" name="clock-place" id="chk" value="bar" />Checkbox</label>').append('<label for="chk"><input type="checkbox" name="clock-place" id="chk" value="bar" />Checkbox</label>').append('<label for="chk"><input type="checkbox" name="clock-place" id="chk" value="bar" />Checkbox</label>').append('<label for="chk"><input type="checkbox" name="clock-place" id="chk" value="bar" />Checkbox</label>');
-$("#tasks").enhanceWithin().controlgroup("refresh");
-
-}
-
-function addTask() {
-	
-}
-
-function addDetail() {
-
-}
-function addNote() {
-
-}
 function addEmployee() {
-
+	var addemployeedata = 
+	$('<div id="addemployee" data-role="page" align="center" data-transition="slide">' +
+	  '<div data-role="header" data-theme="a">'+
+	  '<img border="0" src="header.png" alt="Traxxman" style="position: center" />' +
+	  '<a href="#home" data-role="button" data-icon="back">Back</a></div>'+
+	  '<h2>Add an Employee</h2><div data-role="content" data-theme="a">' +
+	  '<div data-role="footer" data-theme="a">&nbsp;</div></div>');
+	addemployeedata.appendTo($.mobile.pageContainer);
+	$.mobile.changePage(addemployeedata);
 }
-$(document).on("pageshow", "#workorderpage", function (event) {
-		$('#workordermap').gmap().bind('init', function(evt, map) {
-	$('#workordermap').gmap('getCurrentPosition', function(position, status) {
-		if ( status === 'OK' ) {
-			var image = 'ryansmall.png';
-			var clientPosition = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-			$('#workordermap').gmap('addMarker', {'position': clientPosition, 'bounds': true, 'icon': image});
-			$('#workordermap').gmap('addShape', 'Circle', { 
-				'strokeWeight': 0, 
-				'fillColor': "#008595", 
-				'fillOpacity': 0.25, 
-				'center': clientPosition, 
-				'radius': 35, 
-				'clickable': false,
-			});
-		}
-	});   
-});
-});
 
-
-$(document).on("pageshow", "#sendMessage", function (event) {
-	loadinboxemployees();
-});
-
-$(document).on("pageshow", "#home", function (event) {
-
-});
-
-$(document).on("pageinit", "#home", function (event) {
-		apicheck();
-	loadnavbar();
-});
-
-$(document).on("pageshow", "#workorders", function (event) {
-			alertify.success("Loading work orders...");
-	loadworkorderslist();
-});
-
-
-
-$(document).on("pageshow", "#inbox", function (event) {
-	alertify.success("Loading inbox...");
-	loadinbox();
-});
-
-$(document).on("pageshow", "#myaccount", function (event) {
-					alertify.success("Loading your account...");
-	myaccount();
-});
-
-$(document).on("pageinit", "#employees", function (event) {
-						alertify.success("Loading your employees...");
-	loademployees();
-});
-
-function myaccount(){
-$.getJSON(domain + "fullname/" + window.localStorage.getItem("api"), function (data) {
-		document.getElementById('myaccountusername').innerHTML = "<h1>" + data[0].fullname + "</h1>";
-	});
-}
 
 function messagereply(id) {
 	function MessageReplyData() {
@@ -315,7 +298,7 @@ function messagereply(id) {
 			"api": window.localStorage.getItem("api"),
 			"to": id,
 			"subject": $('#subject').val(),
-			"contents": $('#contents').val(),
+			"contents": $('#contents').val()
 		})}
 	$.ajax({
 		type: 'POST',
@@ -325,8 +308,10 @@ function messagereply(id) {
 		data: MessageReplyData(),
 		success: function (data, textStatus, jqXHR) {
 			$(function () {
-				location.reload();
 				alertify.success("Message sent");
+				document.getElementById('contents').value = '';
+				document.getElementById('subject').value = '';
+				location.reload();
 			});
 		},
 		error: function (jqXHR, textStatus, errorThrown) {
@@ -343,18 +328,18 @@ function messagereply(id) {
 function newMessage() {
 	var contents = $('#newcontents').val();
     var subject = $('#newsubject').val();
-	var sendtoid = $("#sendmessageid").val();
+	var sendtoid = $('#employeeinboxlist').selectmenu().val();
 	window.location = "dashboard.html#inbox";
+	alertify.success("Sending message...");
 	function newMessageData() {
 	return JSON.stringify({
 		"api": window.localStorage.getItem("api"),
 		"to": sendtoid,
 		"subject": subject,
-		"contents": contents,
+		"contents": contents
 	});
 		document.getElementById('newcontents').value = '';
 		document.getElementById('newsubject').value = '';
-		document.getElementById('sendmessageid').value = '';
 
 };
 	$.ajax({
@@ -377,28 +362,119 @@ function newMessage() {
 };
 
 
+$(document).on('pageshow', '#workorderpage',function(e,data){   
+    $('#workordermap').css('height',getRealContentHeight());
+    var minZoomLevel = 5;
+	var coordinates = jobsite.split(',');
+	var myLatlng = new google.maps.LatLng(coordinates[0], coordinates[1]);
+    var map = new google.maps.Map(document.getElementById('workordermap'), {
+      zoom: 11,
+      center: myLatlng,
+      mapTypeId: google.maps.MapTypeId.ROADMAP
+   });
 
+   var strictBounds = new google.maps.LatLngBounds(
+     new google.maps.LatLng(28.70, -127.50), 
+     new google.maps.LatLng(48.85, -55.90)
+   );
+	
+   google.maps.event.addListener(map, 'dragend', function() {
+     if (strictBounds.contains(map.getCenter())) return;
+
+
+     var c = map.getCenter(),
+         x = c.lng(),
+         y = c.lat(),
+         maxX = strictBounds.getNorthEast().lng(),
+         maxY = strictBounds.getNorthEast().lat(),
+         minX = strictBounds.getSouthWest().lng(),
+         minY = strictBounds.getSouthWest().lat();
+
+     if (x < minX) x = minX;
+     if (x > maxX) x = maxX;
+     if (y < minY) y = minY;
+     if (y > maxY) y = maxY;
+
+     map.setCenter(new google.maps.LatLng(y, x));
+   });
+	
+		new google.maps.Circle({
+        center: myLatlng,
+		strokeWeight: 0, 
+		fillColor: "#008595", 
+		fillOpacity: 0.25, 
+		radius: 2000, 
+		clickable: false,
+        map: map
+    });
+		
+   // Limit the zoom level
+   google.maps.event.addListener(map, 'zoom_changed', function() {
+     if (map.getZoom() < minZoomLevel) map.setZoom(minZoomLevel);
+   });  
+	
+        var locations = [
+            [title, coordinates[0], coordinates[1], 'images/electric.png'],
+        ];
+			var marker, i;
+        for (i = 0; i < locations.length; i++) {
+			
+			var markertitle = '<p>' + locations[i][0]; + '</p>';
+			
+            marker = new google.maps.Marker({
+                position: new google.maps.LatLng(locations[i][1], locations[i][2]),
+                map: map,
+                icon: locations[i][3],
+				title: markertitle
+				
+			});
+			var $infoWindowContent = $("<div class='infowin-content'>"+ locations[i][0] +"</div>");
+			var infoWindow = new google.maps.InfoWindow();
+			infoWindow.setContent($infoWindowContent[0]);
+			
+			
+			google.maps.event.addListener(marker, 'click', function() {
+    		infoWindow.open(map,marker);
+});
+
+		};
+	
+});
+
+function getRealContentHeight() {
+    var header = $.mobile.activePage.find("div[data-role='header']:visible");
+    var footer = $.mobile.activePage.find("div[data-role='footer']:visible");
+    var content = $.mobile.activePage.find("div[data-role='content']:visible:visible");
+    var viewport_height = $(window).height();
+
+    var content_height = viewport_height - header.outerHeight() - footer.outerHeight();
+    if((content.outerHeight() - header.outerHeight() - footer.outerHeight()) <= viewport_height) {
+        content_height -= (content.outerHeight() - content.height());
+    } 
+    return content_height;
+}
 
 function createWorkOrderPage(id) {
-				$.getJSON(domain + "workorderaddress/" + id + "/" + window.localStorage.getItem("api"), function (addressdata) {
-					$.getJSON(domain + "workordertitle/" + id + "/" + window.localStorage.getItem("api"), function (titledata) { 
+	$.getJSON(domain + "workorders/" + id + "/" + window.localStorage.getItem("api"), function (jobdata) {
+	workorder = id;
+	jobsite = jobdata[3].eventdata;
+	title = jobdata[1].eventdata;
 	var ordernumber = id.replace('x','');
-	var pagedata = $('<div id="workorderpage" data-role="page" align="center" data-transition="slide">' +
-		'<div data-role="header" data-theme="a">' +
-		'<img border="0" src="header.png" alt="Traxxman" style="position: center"/>' +
+	var pagedata = $('<div id="workorderpage" data-role="page" align="center">' +
+		'<div data-role="header" data-theme="a" style="min-height: 50px;">' +
 		'<a href="#home" data-role="button" data-icon="back">Back</a>' +
 		'</div>' +
+		'<img border="0" src="header.png" alt="Traxxman" style="position: center"/>' +
 		'<div data-role="content" data-theme="a">' +
-		'<h3>' + titledata[0].eventdata + '</h3>' +
-		'<p>Work Order #' + ordernumber + '</p>' +
-		'<p>9/13/2014 - 8:00am - 2:00pm</p>' +
-		'<div id="workordermap" style="width: 100%; height: 300px;"></div>' +
-					 
+		'<h1>' + jobdata[2].eventdata + '</h1>' +
+		'<h2>Created by ' + jobdata[0].user + '</h2>' +
+		'<p>Work Order #'+ ordernumber +'</p>' +
+		'<p>2:30pm EST - 9/10/14</p>' +
+		'<div id="workordermap"></div>' +
 		'<div data-role="collapsibleset">' +
 		'<div data-role="collapsible">' +
 		'<h3>Details</h3>' +
 		'<ul data-role="listview" id="details">' +
-		'<li data-icon="calendar"><a href="#"><img src="https://traxxman.com/app/ryan.jpg"><h1>Detail Title</h1><p>Detail information</p></a></li>' +
 		'</ul>' +
 		'<div data-role="content" data-theme="a"><a href="javascript:void(0)" data-role="button" onclick="addDetail();">Add Detail</a></div>' +
 		'</div>' +
@@ -408,30 +484,148 @@ function createWorkOrderPage(id) {
 		'<h3>Tasks</h3>' +
 		'<div data-role="controlgroup" id="tasks">' +
 		'</div>' +
-				'<div data-role="content" data-theme="a"><a href="javascript:void(0)" data-role="button" onclick="addTask();">Add Task</a></div>' +
+		'<div data-role="content" data-theme="a"><a href="javascript:void(0)" data-role="button" onclick="addTask();">Add Task</a></div>' +
 		'</div>' +
 		'</div>' +
 		'<div data-role="collapsibleset">' +
 		'<div data-role="collapsible">' +
 		'<h3>Notes</h3>' +
 		'<ul data-role="listview" id="notes">' +
-		'<li data-icon="edit"><a href="#"><img src="https://traxxman.com/app/ryan.jpg"><h1>Note Title</h1><p>Note information</p></a></li></ul>' +
-				'<div data-role="content" data-theme="a"><a href="javascript:void(0)" data-role="button" onclick="addNote();">Add Note</a></div></div></div>'+
+		'</ul><div data-role="content" data-theme="a"><a href="javascript:void(0)" data-role="button" onclick="addNote();">Add Note</a></div></div></div>'+
 		'<div data-role="collapsibleset">' +
 		'<div data-role="collapsible">' +
 		'<h3>Employees</h3>' +
 		'<ul data-role="listview" id="woemployees">' +
-		'<li data-icon="user"><a href="#"><img src="https://traxxman.com/app/ljsmall.png"><h1>Employee</h1><p>Employee Info</p></a></li></ul>' +
-				'<div data-role="content" data-theme="a"><a href="javascript:void(0)" data-role="button" onclick="addEmployee();">Add Employee</a></div>' +
+		'</ul><div data-role="content" data-theme="a"><a href="javascript:void(0)" data-role="button" onclick="addEmployeetoWO();">Add Employee</a></div>' +
 					 '</div><div data-role="footer" data-theme="a">&nbsp;</div></div>');
 	pagedata.appendTo($.mobile.pageContainer);
 	$.mobile.changePage(pagedata);
-						loadtasks();
-					}); });
+		
+function loadtasks() {
+	
+$('#tasks').controlgroup("container")
+.append('<label for="chk"><input type="checkbox" name="clock-place" id="chk" value="bar" />Complete Task 1</label>')
+.append('<label for="chk"><input type="checkbox" name="clock-place" id="chk" value="bar" />Close Work Order</label>')
+$("#tasks").enhanceWithin().controlgroup("refresh");
+
 }
 
+function loadDetails() {
+$.getJSON(domain + "/workorders/" + id + "/jobsite/" + window.localStorage.getItem("api"), function (jobdata) {
+		$('#details li').remove();
+		$.each(jobdata[0], function (index, value) {
+			console.log(index + value);
+			
+			$('#details').append('<li data-icon="calendar"><a href="#"><img src="https://traxxman.com/app/ryan.jpg"><h1>'+index+'</h1><p>'+value+'</p></a></li>');
+			
+			
+				$('#details').listview().listview('refresh');
+
+	});
+});
+}
+
+function loadEvents() {
+console.log('loading events...');
+
+}
+		
+function loadNotes() {
+	$.getJSON(domain + "workorders/" + workorder + "/note/" + window.localStorage.getItem("api"), function (notedata) {
+		$('#notes li').remove();
+		for (var i = 0, l = notedata.note.length; i < l; i++) {
+			var obj = notedata.note[i];
+			console.log(obj);
+			url = 'https://traxxman.com/app/ryan.jpg';
+			$('#notes').append('<li data-icon="edit"><a href="javascript:void(0)"><img src="'+url+'"><h1>Note Title</h1><p>Note information</p><+/a></li>');
+				$('#notes').listview().listview('refresh');
+
+	};
+});
+}
+
+function loadEmployees() {
+		$.getJSON(domain + "/workorders/" + id + "/jobsite/" + window.localStorage.getItem("api"), function (jobdata) {
+		$('#woemployees li').remove();
+		$.each(jobdata[0], function (index, value) {
+			console.log(index + value);
+			
+			$('#woemployees').append('<li data-icon="user"><a href="javascript:void(0)"><img src="https://traxxman.com/app/ljsmall.png"><h1>Employee</h1><p>Employee Info</p></a></li>');
+			
+				$('#woemployees').listview().listview('refresh');
+
+	});
+});
+}
+		
+function addTask() {
+	
+}
+
+function addDetail() {
+			$('#details').append('<li data-icon="calendar"><a href="#"><img src="https://traxxman.com/app/ryan.jpg"><h1>Detail Title</h1><p>Detail information</p></a></li>');
+			
+			
+				$('#details').listview().listview('refresh');
+
+}
+function addNote() {
+
+}
+		
+function addEmployeetoWO() {
+
+}
+	loadtasks();
+	loadDetails();
+	loadEmployees();
+	loadNotes();
+});
+}
+
+function loademployees() {
+	$('#employeelist li').remove();
+	$.getJSON(domain + "employees/" + window.localStorage.getItem("api"), function (employees) {
+	var splitme = employees.employeeids;
+	var employees = splitme.split(', ');
+	$.each(employees, function (index, value) {
+	$.getJSON(domain + "profile/" + value, function (profiledata) {
+	$('#employeelist').append("<li><a href='javascript:void(0)' onclick='createEmployeeProfile(" + value + ")'><img src='images/avatars/" + profiledata[0].avatarurl + "'><h2>" + profiledata[0].fullname + "</h2><p>Last seen in " + profiledata[0].lastseen + "</p></a></li>");
+	$('#employeelist').listview().listview('refresh');
+				});
+	});
+});
+}
+	
 function createEmployeeProfile(id) {
-	var empagedata = $('<div id="employeeprofile" data-role="page" align="center" data-transition="slide"><div data-role="header" data-theme="a"><img border="0" src="header.png" alt="Traxxman" style="position: center" /><a href="#home" data-role="button" data-icon="back">Back</a></div><h2>'+id+'s Profile</h2><div data-role="content" data-theme="a"><img src="https://traxxman.com/app/ljsmall.png"></div><div data-role="footer" data-theme="a">&nbsp;</div></div>');
-	empagedata.appendTo($.mobile.pageContainer);
-	$.mobile.changePage(empagedata);
+	$.getJSON(domain + "profile/" + id, function (profiledata) {
+	var pagedatas = $('<div id="employeeprofile" data-role="page" align="center" data-transition="slide"><div data-role="header" data-theme="a"><img border="0" src="header.png" alt="Traxxman" style="position: center" /><a href="#home" data-role="button" data-icon="back">Back</a></div><h2>'+ profiledata[0].fullname +'s Profile</h2><div data-role="content" data-theme="a"><img src="images/avatars/"></div><div data-role="footer" data-theme="a">&nbsp;</div></div>');
+	});
+	pagedatas.appendTo($.mobile.pageContainer);
+	$.mobile.changePage(pagedatas);
+}
+
+function myAccount() {
+	$.getJSON(domain + "myaccount/" + window.localStorage.getItem("api"), function (account) {
+	var epdata = $('<div id="myaccount" data-role="page" align="center" >' +
+		'<div data-role="header" data-theme="a" style="min-height: 50px;">&nbsp;' + 
+			'<a href="#home" data-role="button" data-icon="back">Back</a>' +
+		'</div>' +
+				'<div id="header"><img src="header.png"></div>' +
+		'<div role="main" class="ui-content">' +
+			'<div class="ui-grid-a">' + 
+				'<div class="ui-block-a" style="height:100%">' + 
+				'<img style="height: 150px; width: 150px;" src="images/avatars/' + account[0].avatarurl + '" is="image">' + 
+				'</div>' + 
+				'<div class="ui-block-b" style="height:100%">' + 
+				'<div id="info">' + account[0].fullname + '</div>' + 
+			'</div>' + 
+			'</div>' + 
+			'</div>' + 
+		'<div data-role="footer" data-theme="a">&nbsp;' + 
+		'</div>' + 
+	'</div>');
+		epdata.appendTo($.mobile.pageContainer);
+	$.mobile.changePage(epdata);
+		});
 }

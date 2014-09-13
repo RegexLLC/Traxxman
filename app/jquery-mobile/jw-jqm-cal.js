@@ -13,7 +13,7 @@
          // Sting to use when event is all day
          allDayTimeString: '',
          // Theme
-         theme : "c",
+         theme : "a",
          // Date variable to determine which month to show and which date to select
          date : new Date(),
          // Version

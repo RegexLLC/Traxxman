@@ -6,7 +6,7 @@
 	font-family: sans-serif;
 }
 .alertify {
-	background: #000;
+	background: #FFF;
 	border: 10px solid #333; /* browsers that don't support rgba */
 	border: 10px solid rgba(0,0,0,.7);
 	border-radius: 8px;
@@ -64,7 +64,7 @@
 		}
 
 .alertify-log {
-	background: #000;
+	background: #FFF;
 	background: rgba(0,0,0,.9);
 	padding: 15px;
 	border-radius: 4px;
