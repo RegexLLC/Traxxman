@@ -1,4 +1,8 @@
 <?php
+   $mtime = microtime(); 
+   $mtime = explode(" ",$mtime); 
+   $mtime = $mtime[1] + $mtime[0]; 
+   $starttime = $mtime; 
 
 function getConnection() {
 	$dbhost = 'localhost';
@@ -27,14 +31,11 @@ function getWorkOrders() {
 	}
 	$workorderslist = array();
 	$workorderslist = preg_grep("/^x/", $workorders);
-	
 	$workordersjustx = array();
 	array_push($workordersjustx, $workorderslist);
 	$workordersarray = array_values($workordersjustx[0]);
-	
-	for($i = 0, $l = count($workordersarray); $i < $l; ++$i) {
-		
-		$currentorder = $workordersarray[$i];
+	foreach ($workordersarray as $v) {
+		$currentorder = $v;
 		$sql = "SELECT * FROM " . $currentorder . " WHERE eventtype='jobstart'";
 	try {
 		$db = getConnection();
@@ -56,11 +57,11 @@ function getWorkOrders() {
 	}		catch(PDOException $e) {
 		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
 	}
-		
 $currentTime = time();
-
+echo($currentorder . " - Starts at: " . $jobstart . ". - Ends at: " .$jobend . "<br>");
 if ($currentTime > $jobstart && $currentTime < $jobend ) {
     $sql = "SELECT * FROM " . $currentorder . " WHERE eventtype='employee'";
+	echo($currentorder . " is active.<br>");
 	try {
 		$db = getConnection();
 		$stmt = $db->query($sql);  
@@ -109,6 +110,11 @@ if ($currentTime > $jobstart && $currentTime < $jobend ) {
 	} 
 	}
 
-	
 getWorkOrders();
+   $mtime = microtime(); 
+   $mtime = explode(" ",$mtime); 
+   $mtime = $mtime[1] + $mtime[0]; 
+   $endtime = $mtime; 
+   $totaltime = ($endtime - $starttime); 
+   echo $totaltime;
 ?>

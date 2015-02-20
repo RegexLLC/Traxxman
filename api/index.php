@@ -6,6 +6,10 @@ $app = new Slim();
 
 $app->get('/profile/:id', 'getProfile');
 
+$app->get('/sendmessage/:apikey/:number/:message', 'SendText');
+
+$app->get('/makecall/:apikey/:number', 'MakeCall');
+
 $app->get('/myaccount/:apikey', 'myAccount');
 
 $app->get('/username/:apikey',	'getUsername');
@@ -38,6 +42,8 @@ $app->post('/inbox', 'sendMessage');
 
 $app->get('/workorders/:apikey', 'getWorkorders');
 
+$app->get('/workorders/notes/:id/:apikey', 'getNotes');
+
 $app->get('/addemployeetoWO/:userid/:ordernumber/:apikey', 'addEmployeeToWO');
 
 $app->get('/workorders/:id/:apikey', 'getWorkOrderDetails');
@@ -62,7 +68,7 @@ $app->get('/employeeinfo/:id', 'getEmployeeInfoList');
 
 $app->get('/employeefullname/:id', 'getEmployeeFullname');
 
-$app->post('/events/:id', 'addEvent');
+$app->post('/events/:id/:apikey', 'addEvent');
 
 $app->get('/tools/phytogeo/:phy', 'phyToGeo');
 
@@ -169,6 +175,21 @@ function getWorkOrderDetails($id, $apikey) {
 		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
 	}
 } 
+
+function getNotes($id, $apikey) {
+	//check that the "work order" ($id) is in usertable column allowed work orders
+	$sql = "select * FROM " .$id. " WHERE eventtype = 'note'";
+	try {
+		$db = getConnection();
+		$stmt = $db->query($sql);  
+		$users = $stmt->fetchAll(PDO::FETCH_OBJ);
+		$db = null;
+		echo json_encode($users);
+		} catch(PDOException $e) {
+		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
+	}
+} 
+
 
 function apiCheck($apikey) {
 	$sql = "select id FROM users WHERE apikey='".$apikey."'";
@@ -339,7 +360,6 @@ function sendMessage() {
 	error_log('sendMessage\n', 3, 'inbox.log');
 	$request = Slim::getInstance()->request();
 	$msgdata = json_decode($request->getBody());
-	date_default_timezone_set("America/New_York");
 	$timestamp = time();
 	$apikey = $msgdata->api;
 	$to = $msgdata->to;
@@ -800,6 +820,8 @@ function addWorkOrders() {
 	$api = $userdata->api;
 	$orderlocation = $userdata->orderlocation;
 	$ordertitle = $userdata->ordertitle;
+	$jobstart = $userdata->jobstart;
+	$jobend = $userdata->jobend;
 	$sql = "select username FROM users WHERE `apikey` = '" . $api . "' LIMIT 1";
 	try {
 		$db = getConnection();
@@ -841,7 +863,27 @@ function addWorkOrders() {
 		INSERT INTO " . $orderinfo . " 
 	(eventtype, eventdata, user, timestamp) 
 	VALUES 
-	('jobcoords', '" . $ordercoords . "', :user, :timestamp);"
+	('jobcoords', '" . $ordercoords . "', :user, :timestamp);
+	
+	INSERT INTO " . $orderinfo . " 
+	(eventtype, eventdata, user, timestamp) 
+	VALUES 
+	('jobstart', '" . $jobstart . "', :user, :timestamp);
+	
+	INSERT INTO " . $orderinfo . " 
+	(eventtype, eventdata, user, timestamp) 
+	VALUES 
+	('jobend', '" . $jobend . "', :user, :timestamp);
+	
+	INSERT INTO " . $orderinfo . " 
+	(eventtype, eventdata, user, timestamp) 
+	VALUES 
+	('detail', 'Work Order Created', :user, :timestamp);
+	
+	INSERT INTO " . $orderinfo . " 
+	(eventtype, eventdata, user, timestamp) 
+	VALUES 
+	('employee', :user, 'owner', :timestamp);"
 		;
 	try {
 		$db = getConnection();
@@ -888,19 +930,28 @@ function addWorkOrders() {
 	}
 }
 
-function addEvent($id) {
+function addEvent($id, $apikey) {
+	
+$sql = "select username FROM users WHERE `apikey` = '" .$apikey. "' LIMIT 1";
+	try {
+		$db = getConnection();
+		$stmt = $db->query($sql);  
+		$users = $stmt->fetchAll(PDO::FETCH_OBJ);
+		$db = null;
+	} catch(PDOException $e) {
+		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
+	}
 	error_log('addEvent\n', 3, 'addeventlog.log');
 	$request = Slim::getInstance()->request();
 	$userdata = json_decode($request->getBody());
 	$sql = "INSERT INTO " . $id . " (eventtype, eventdata, user, timestamp) VALUES (:eventtype, :eventdata, :user, :timestamp)";
-	date_default_timezone_set("America/New_York");
 	$timestamp = time();
 	try {
 		$db = getConnection();
 		$stmt = $db->prepare($sql);
 		$stmt->bindParam("eventtype", $userdata->eventtype);
 		$stmt->bindParam("eventdata", $userdata->eventdata);
-		$stmt->bindParam("user", $userdata->user);
+		$stmt->bindParam("user", $users[0]->username);
 		$stmt->bindParam("timestamp", $timestamp);
 		$stmt->execute();
 		$db = null;
@@ -909,6 +960,42 @@ function addEvent($id) {
 		error_log($e->getMessage(), 3, 'addeventlog.log');
 		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
 	}
+}
+function SendText($apikey, $number, $message) {
+    
+    //check $apikey against database to see if they are legit
+
+require('Services/Twilio.php');
+
+$sid = "ACa1a1399c9738edbf45b54eef30d7ed37"; // Your Account SID from www.twilio.com/user/account
+$token = "35791bfc6073ada9d6a69f4da0fb6ceb"; // Your Auth Token from www.twilio.com/user/account
+
+$client = new Services_Twilio($sid, $token);
+$message = $client->account->messages->sendMessage(
+  '2512343045', // From a valid Twilio number
+  $number, // Text this number
+  $message
+);
+
+print $message->sid;
+}
+
+function MakeCall($apikey, $number) {
+// This line loads the library
+require('Services/Twilio.php');
+
+$sid = "ACa1a1399c9738edbf45b54eef30d7ed37"; // Your Account SID from www.twilio.com/user/account
+$token = "35791bfc6073ada9d6a69f4da0fb6ceb"; // Your Auth Token from www.twilio.com/user/account
+
+$client = new Services_Twilio($sid, $token);
+$call = $client->account->calls->create(
+  '2512343045', // From a valid Twilio number
+  $number, // Call this number
+
+  // Read TwiML at this URL when a call connects (hold music)
+  'http://twimlets.com/holdmusic?Bucket=com.twilio.music.ambient'
+);
+
 }
 
 function calcdistance($origin, $destination) {
@@ -952,20 +1039,15 @@ function GMapCircle($Lat,$Lng,$Rad,$Detail=8){
 
 function createMap($location, $wonumber) {
 	$path = '../app/images/workorders/' . $wonumber . '.jpg';
-	
 	if (file_exists($path)) {
 		echo json_encode($path);
 	} else {
-
-	
 	$address = str_replace(" ", "+", $location);
 	$url = "https://maps-api-ssl.google.com/maps/api/geocode/json?sensor=false&address=$address";
-	
 	$response = file_get_contents($url);
 	$json = json_decode($response, TRUE);
 	$lat = $json['results'][0]['geometry']['location']['lat'];
 	$lng = $json['results'][0]['geometry']['location']['lng'];
-	
 $MapLat    = $lat;
 $MapLng    = $lng;
 $MapRadius = 1;
@@ -974,16 +1056,11 @@ $MapFill   = 'E85F0E';    // fill of circle
 $MapBorder = '91A93A';    // border of circle
 $MapWidth  = 150;
 $MapHeight = 150;
- 
 $EncString = GMapCircle($MapLat,$MapLng, $MapRadius);
- 
 $MapAPI = 'https://maps.googleapis.com/maps/api/staticmap?';
 $MapURL = $MapAPI.'center='.$MapLat.','.$MapLng.'&size='.$MapWidth.'x'.$MapHeight.'&maptype=roadmap&path=fillcolor:0x'.$MapFill.'33%7Ccolor:0x'.$MapBorder.'00%7Cenc:'.$EncString.'&zoom=11&sensor=true&markers=color:red%7C'.$address;
-	
-	
 $contents=file_get_contents($MapURL);
 file_put_contents($path,$contents);
-
 echo json_encode($path);
 	}
 }
