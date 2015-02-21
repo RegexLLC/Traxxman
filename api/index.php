@@ -38,6 +38,8 @@ $app->get('/markasread/:toid',	'markAsRead');
 
 $app->get('/mylocation/:location/:apikey',	'myLocation');
 
+$app->get('/inbox/reply/:toid/:subject/:contents/:apikey', 'sendReply');
+
 $app->post('/inbox', 'sendMessage');
 
 $app->get('/workorders/:apikey', 'getWorkorders');
@@ -82,9 +84,9 @@ $app->run();
 
 function getConnection() {
 	$dbhost = 'localhost';
-    $dbuser = 'root';
-    $dbpass = '123456';
-    $dbname = 'traxxman';
+    $dbuser = 'traxxman_api';
+    $dbpass = '2ZME3sy3FM#z';
+    $dbname = 'traxxman_api';
 	$dbh = new PDO("mysql:host=$dbhost;dbname=$dbname", $dbuser, $dbpass);	
 	$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 	return $dbh;
@@ -450,7 +452,7 @@ $sql = 'UPDATE users SET unreadmessages='. $newcount . ' WHERE id=' . $toid;
 		catch(PDOException $e) {
 		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
 	}
-	$sql = 'INSERT INTO `traxxman`.`inbox` (`id`, `subject`, `from`, `friendlyfrom`, `to`, `friendlyto`, `contents`, `location`, `timestamp`, `read`) VALUES (NULL, :subject, :from, :friendlyfrom, :to, :friendlyto, :contents, :location, :timestamp, '.$read.')';
+	$sql = 'INSERT INTO `traxxman_api`.`inbox` (`id`, `subject`, `from`, `friendlyfrom`, `to`, `friendlyto`, `contents`, `location`, `timestamp`, `read`) VALUES (NULL, :subject, :from, :friendlyfrom, :to, :friendlyto, :contents, :location, :timestamp, '.$read.')';
 	try {
 		$db = getConnection();
 		$stmt = $db->prepare($sql);
@@ -481,6 +483,119 @@ function myLocation($location, $apikey) {
 		$db = null;
 		}
 		catch(PDOException $e) {
+		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
+	}
+}
+
+function sendReply($toid, $subject, $contents, $apikey) {
+	error_log('sendReply\n', 3, 'inbox.log');
+	$request = Slim::getInstance()->request();
+	$msgdata = json_decode($request->getBody());
+	$timestamp = time();
+	$sql = "select fullname FROM users WHERE `id` = '" .$toid. "' LIMIT 1";
+	try {
+		$db = getConnection();
+		$stmt = $db->query($sql);  
+		$users = $stmt->fetchAll(PDO::FETCH_OBJ);
+		$sqldata = null;}
+				catch(PDOException $e) {
+		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
+		}
+		if ($users[0]->fullname == "") {
+		$sql = "select username FROM users WHERE `id` = '" .$toid. "' LIMIT 1";
+	try {
+		$db = getConnection();
+		$stmt = $db->query($sql);  
+		$sqldata = $stmt->fetchAll(PDO::FETCH_OBJ);
+		$db = null;
+		$to = '[{"fullname":"' . $sqldata[0]->username . '"}]';
+		}
+		catch(PDOException $e) {
+		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
+		}}
+		else {
+		$to = '[{"fullname":"' . $users[0]->fullname . '"}]';
+		}
+		$friendlyto = json_decode($to);
+		$sql = "select fullname FROM users WHERE `apikey` = '" .$apikey. "' LIMIT 1";
+	try {
+		$db = getConnection();
+		$stmt = $db->query($sql);  
+		$users = $stmt->fetchAll(PDO::FETCH_OBJ);
+		$db = null;
+		if ($users[0]->fullname == "") {
+		$sql = "select username FROM users WHERE `apikey` = '" .$apikey. "' LIMIT 1";
+	try {
+		$db = getConnection();
+		$stmt = $db->query($sql);  
+		$users = $stmt->fetchAll(PDO::FETCH_OBJ);
+		$db = null;
+		$from = '[{"fullname":"' . $users[0]->username . '"}]';
+		}
+		catch(PDOException $e) {
+		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
+	}
+		}
+		else {
+		$from = '[{"fullname":"' . $users[0]->fullname . '"}]';
+		}
+	} catch(PDOException $e) {
+		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
+	}
+	
+		$sql = "select id FROM users WHERE `apikey` = '" .$apikey. "' LIMIT 1";
+	try {
+		$db = getConnection();
+		$stmt = $db->query($sql);  
+		$users = $stmt->fetchAll(PDO::FETCH_OBJ);
+		$db = null;
+		$fromid = '[{"id":"' . $users[0]->id . '"}]';
+	} catch(PDOException $e) {
+		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
+	}
+	$friendlyfrom = json_decode($from);
+	$from = json_decode($fromid);
+	$location = "Daphne, AL";
+	$read = "0";
+	$sql = "select unreadmessages FROM users WHERE `id` = '" .$toid. "' LIMIT 1";
+	try {
+		$db = getConnection();
+		$stmt = $db->query($sql);  
+		$msgs = $stmt->fetchAll(PDO::FETCH_OBJ);
+		$db = null;
+	} catch(PDOException $e) {
+		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
+	}
+	
+	$newcount = $msgs[0]->unreadmessages;
+	
+	$newcount += 1;
+	
+$sql = 'UPDATE users SET unreadmessages='. $newcount . ' WHERE id=' . $toid;
+		try {
+		$db = getConnection();
+		$stmt = $db->query($sql);  
+		$db = null;
+		}
+		catch(PDOException $e) {
+		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
+	}
+	$sql = 'INSERT INTO `traxxman_api`.`inbox` (`id`, `subject`, `from`, `friendlyfrom`, `to`, `friendlyto`, `contents`, `location`, `timestamp`, `read`) VALUES (NULL, :subject, :from, :friendlyfrom, :to, :friendlyto, :contents, :location, :timestamp, '.$read.')';
+	try {
+		$db = getConnection();
+		$stmt = $db->prepare($sql);
+		$stmt->bindParam("subject", $subject);
+		$stmt->bindParam("from", $from[0]->id);
+		$stmt->bindParam("friendlyfrom", $friendlyfrom[0]->fullname);
+		$stmt->bindParam("to", $toid);
+		$stmt->bindParam("friendlyto", $friendlyto[0]->fullname);
+		$stmt->bindParam("contents", $contents);
+		$stmt->bindParam("location", $location);
+		$stmt->bindParam("timestamp", $timestamp);
+		$stmt->execute();
+		$db = null;
+	} catch(PDOException $e) {
+		error_log($e->getMessage(), 3, 'inboxerrors.log');
 		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
 	}
 }
@@ -995,11 +1110,11 @@ $call = $client->account->calls->create(
 }
 
 function calcdistance($origin, $destination) {
+$origin = str_replace(" ", "+", $origin);
+$destination = str_replace(" ", "+", $destination);
 $url = 'http://maps.googleapis.com/maps/api/distancematrix/json?origins=' . $origin. '&destinations=' . $destination . '&mode=driving&language=en,EN';
 $result = file_get_contents($url);
 echo $result;
-	
-	
 }
 
 function GMapCircle($Lat,$Lng,$Rad,$Detail=8){
