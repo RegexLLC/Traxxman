@@ -2,13 +2,18 @@
 var domain = "http://Traxxman.com/api/";
 
     function init() {
-        
+        $.mobile.allowCrossDomainPages = true;
+        $.mobile.page.prototype.options.domCache = true;
         document.addEventListener("deviceready", onDeviceReady, false);
         
     }
 
-	function getCurrentPosition() {
-		navigator.geolocation.getCurrentPosition(onSuccess, onError);
+    function onDeviceReady() {
+    StartTracking();
+    }
+
+	function StartTracking() {
+    navigator.geolocation.watchPosition(onSuccess, onError, { maximumAge: Infinity, timeout: 15000, enableHighAccuracy: true });
 	}
 
     function onSuccess(position) {
@@ -31,6 +36,7 @@ $(document).on("pagebeforeshow", "#sendMessage", function (event) {
 });
 
 $(document).on("pagebeforeshow", "#home", function (event) {
+    apicheck();
 	loadnavbar();
 });
 
@@ -310,6 +316,7 @@ function isloggedin() {
 			} else {
 				window.localStorage.setItem("api", "");
 				alertify.error("Please re-login");
+                window.location = "index.html";
 			}
 		}).fail(function (d, textStatus, error) {
 			alertify.error("Could not connect to Traxxman Cloud");
@@ -326,10 +333,10 @@ function apicheck() {
 	} else {
 		$.getJSON(domain + "tools/apicheck/" + api, function (validation) {
 			if (validation !== "valid") {
-				window.location = "index.html";
 			}
 		}).fail(function (d, textStatus, error) {
 			alertify.error("Could not connect to Traxxman Cloud");
+            window.location = "index.html";
 
 		});
 	}
@@ -965,7 +972,6 @@ function loadCalendar() {
 }
 
 function myAccount() {
-	getCurrentPosition();
 	$.getJSON(domain + "myaccount/" + window.localStorage.getItem("api"), function (account) {
 		var epdata = $('<div id="myaccount" data-role="page" align="center" data-theme="a">' +
 			'<div data-role="header" style="min-height: 50px;">&nbsp;' +
@@ -1008,19 +1014,19 @@ function loadMap() {
                 success: function(data) {
                     set = data;
 					window.you = (set.results[0].address_components[1].short_name + ", " + set.results[0].address_components[2].short_name + ", " + set.results[0].address_components[4].short_name);
-					console.log(window.you);
                 },
                 error : function() {
                     alertify.error("Error.");
                 }
-				
             });
+    
 		var myLatlng = new google.maps.LatLng(coordinates[0], coordinates[1]);
 		var map = new google.maps.Map(document.getElementById('myaccountmap'), {
 			zoom: 11,
 			center: myLatlng,
 			mapTypeId: google.maps.MapTypeId.ROADMAP
 		});
+    
 		var markertitle = "<div style='padding: 10px;'>"+window.you+"</div>";
 		marker = new google.maps.Marker({
 			position: myLatlng,
@@ -1029,12 +1035,15 @@ function loadMap() {
 			title: markertitle
 
 		});
+    
 		var $infoWindowContent = $("<div class='infowin-content'>" + markertitle + "</div>");
 		var infoWindow = new google.maps.InfoWindow();
 		infoWindow.setContent($infoWindowContent[0]);
+    
 		google.maps.event.addListener(marker, 'click', function () {
 			infoWindow.open(map, marker);
 		});
+    
 google.maps.event.addListenerOnce(map, 'idle', function () {
 			google.maps.event.trigger(map, 'resize');
 		});

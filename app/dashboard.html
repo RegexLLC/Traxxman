@@ -24,7 +24,7 @@
 			<ul>
 				<li><a href="#inbox" data-icon="mail" data-iconpos="left" id="messagescount"></a>
 				</li>
-				<li><a href="#workorders" data-icon="calendar " data-iconpos="left" id="workordercount"></a>
+				<li><a href="#workorders" data-icon="bars" data-iconpos="left" id="workordercount"></a>
 				</li>
 				<li><a href="javascript:void(0)" onclick="myAccount()" data-icon="user" data-iconpos="left" id="myaccountusername"></a>
 				</li>
@@ -33,21 +33,19 @@
 
 		<div data-role="content">
 			<ul data-role="listview">
-				<li><a href="#inbox">Inbox</a>
+				<li><a class="ui-btn ui-btn-icon-left ui-icon-mail" href="#inbox">Inbox</a>
 				</li>
-				<li><a href="javascript:void(0)" onclick="loadCalendar();">Calendar</a>
+				<li><a class="ui-btn ui-btn-icon-left ui-icon-calendar" href="javascript:void(0)" onclick="loadCalendar();">Calendar</a>
 				</li>
-				<li><a href="#workorders">Work Orders</a>
+				<li><a class="ui-btn ui-btn-icon-left ui-icon-bars" href="#workorders">Work Orders</a>
 				</li>
-				<li><a href="#employees">Employees</a>
+				<li><a class="ui-btn ui-btn-icon-left ui-icon-user" href="#employees" >Employees</a>
 				</li>
-				<li><a href="javascript:void(0)" onclick="myAccount();">My Account</a>
+				<li><a href="javascript:void(0)" class="ui-btn ui-btn-icon-left ui-icon-gear" onclick="myAccount();">My Account</a>
 				</li>
-				<li><a href="javascript:void(0)" onclick="logOutReady();">Logout</a>
+				<li><a href="javascript:void(0)" class="ui-btn ui-btn-icon-left ui-icon-power" onclick="logOutReady();">Logout</a>
 				</li>
 			</ul>
-		</div>
-		<div data-role="footer">&nbsp;
 		</div>
 	</div>
 

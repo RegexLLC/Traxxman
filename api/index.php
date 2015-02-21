@@ -68,8 +68,6 @@ $app->get('/employeeinfo/:id', 'getEmployeeInfoList');
 
 $app->get('/employeefullname/:id', 'getEmployeeFullname');
 
-$app->post('/events/:id/:apikey', 'addEvent');
-
 $app->get('/tools/phytogeo/:phy', 'phyToGeo');
 
 $app->get('/tools/apicheck/:apikey', 'apiCheck');
@@ -225,7 +223,7 @@ function getWorkOrderAuthor($id, $apikey) {
 
 function pullLocations($workorder, $username, $apikey) {
 	//check that the "work order" ($id) is in usertable column allowed work orders
-	$sql = "SELECT * FROM ".$workorder." WHERE `eventtype`='location' AND `user` = '".$username."' LIMIT 50";
+	$sql = "SELECT * FROM ".$workorder." WHERE `eventtype`='location' AND `user` = '".$username."' LIMIT 1500";
 	try {
 		$db = getConnection();
 		$stmt = $db->query($sql);  
@@ -580,7 +578,6 @@ function getIDFromAPI($apikey) {
 	}
 }
 
-
 function getNameFromID($id) {
 	$sql = "select fullname FROM users WHERE `id` = '" .$id. "' LIMIT 1";
 	try {
@@ -725,6 +722,7 @@ function getEmployeeFullname($id) {
 	}
 	
 }
+
 function getEmployeeInfo($id, $apikey) {
 	// add api key as an argument and check that $id is in users employeeids
 	$sql = "select username, fullname, email, company, timezone, employees,  usedemployees, activeworkorder, lastseen FROM users WHERE `id` = '" .$id. "' LIMIT 1";
@@ -981,27 +979,23 @@ print $message->sid;
 }
 
 function MakeCall($apikey, $number) {
-// This line loads the library
 require('Services/Twilio.php');
 
-$sid = "ACa1a1399c9738edbf45b54eef30d7ed37"; // Your Account SID from www.twilio.com/user/account
-$token = "35791bfc6073ada9d6a69f4da0fb6ceb"; // Your Auth Token from www.twilio.com/user/account
+$sid = "ACa1a1399c9738edbf45b54eef30d7ed37";
+$token = "35791bfc6073ada9d6a69f4da0fb6ceb";
 
 $client = new Services_Twilio($sid, $token);
 $call = $client->account->calls->create(
-  '2512343045', // From a valid Twilio number
-  $number, // Call this number
+  '2512343045',
+  $number,
 
-  // Read TwiML at this URL when a call connects (hold music)
   'http://twimlets.com/holdmusic?Bucket=com.twilio.music.ambient'
 );
 
 }
 
 function calcdistance($origin, $destination) {
-
 $url = 'http://maps.googleapis.com/maps/api/distancematrix/json?origins=' . $origin. '&destinations=' . $destination . '&mode=driving&language=en,EN';
-
 $result = file_get_contents($url);
 echo $result;
 	
